@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جاهز | لوحة المدير وإدارة الاشتراكات</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; margin: 0; padding: 0; }
+    body { background: #0b1120; color: #f8fafc; padding: 30px 20px; }
+    .container { max-width: 1050px; margin: 0 auto; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
+    h1 { font-size: 26px; font-weight: 800; color: #38bdf8; }
+    
+    .add-store-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 25px; margin-bottom: 35px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
+    input, select { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px 14px; border-radius: 12px; font-size: 15px; outline: none; }
+    input:focus, select:focus { border-color: #38bdf8; }
+    .btn-add { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn-add:hover { background: #1d4ed8; }
+
+    .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+    .store-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 22px; position: relative; }
+    .store-name { font-size: 22px; font-weight: 800; color: #f8fafc; }
+    .store-slug { color: #94a3b8; font-size: 14px; margin-bottom: 14px; direction: ltr; text-align: right; }
+    
+    /* تنبيهات الاشتراك */
+    .sub-info-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.7; }
+    .warning-alert { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; border-radius: 10px; padding: 8px 12px; font-weight: bold; margin-bottom: 12px; font-size: 13px; text-align: center; }
+    .expired-alert { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; border-radius: 10px; padding: 8px 12px; font-weight: bold; margin-bottom: 12px; font-size: 13px; text-align: center; }
+
+    .links-box { background: #0f172a; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.8; }
+    .links-box a { color: #38bdf8; text-decoration: none; word-break: break-all; }
+
+    .qr-preview { text-align: center; margin-top: 5px; background: white; padding: 10px; border-radius: 12px; display: inline-block; }
+    .qr-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 15px; }
+    .btn-small { background: #334155; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .btn-small:hover { background: #475569; }
+    .btn-renew { background: #16a34a; }
+    .btn-renew:hover { background: #15803d; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>جاهز | إدارة المشتركين والاشتراكات 🏢</h1>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">متابعة صلاحية التراخيص وتنبيهات التجديد</p>
+      </div>
+      <div id="storesCount" style="font-size: 18px; font-weight: bold; color: #38bdf8;">0 محلات</div>
+    </header>
+
+    <div class="add-store-card">
+      <h3 style="font-size: 18px;">+ تسجيل كافيه / مطعم جديد وتحديد مدة الاشتراك</h3>
+      <div class="form-grid">
+        <input type="text" id="storeName" placeholder="اسم المحل (مثلاً: أسترا كافيه)">
+        <input type="text" id="storeSlug" placeholder="المعرّف بالإنجليزي (مثلاً: astra)">
+        <input type="text" id="storePhone" placeholder="رقم هاتف المسؤول">
+        <select id="planDuration">
+          <option value="1">شهر واحد (30 يوم)</option>
+          <option value="3">3 شهور (باقة ربع سنوية)</option>
+          <option value="6">6 شهور (باقة نصف سنوية)</option>
+          <option value="12">سنة كاملة (365 يوم)</option>
+        </select>
+        <button class="btn-add" onclick="addNewStore()">إنشاء الحساب والاشتراك</button>
+      </div>
+    </div>
+
+    <div class="stores-grid" id="storesContainer"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const BASE_URL = window.location.origin + window.location.pathname.replace('admin.html', '');
+
+    async function loadStores() {
+      const { data, error } = await supabaseClient.from('stores').select('*').order('created_at', { ascending: false });
+      if (error) return;
+      renderStores(data || []);
+    }
+
+    function renderStores(stores) {
+      document.getElementById('storesCount').innerText = `${stores.length} مشتركين`;
+      const container = document.getElementById('storesContainer');
+      container.innerHTML = '';
+
+      if (stores.length === 0) {
+        container.innerHTML = '<p style="color: #64748b; grid-column: 1/-1; text-align: center;">لم تسجل أي محل بعد.</p>';
+        return;
+      }
+
+      const today = new Date();
+
+      stores.forEach(s => {
+        const cashierUrl = `${BASE_URL}cashier.html?store=${s.slug}`;
+        const customerUrl = `${BASE_URL}customer.html?store=${s.slug}`;
+        const canvasId = `qr-${s.slug}`;
+
+        // حساب الأيام المتبقية
+        const endDate = s.end_date ? new Date(s.end_date) : new Date(today.getTime() + 30*24*60*60*1000);
+        const diffTime = endDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        let alertBadge = '';
+        if (diffDays <= 0) {
+          alertBadge = `<div class="expired-alert">⚠️ انتهى الاشتراك! يلزم التجديد</div>`;
+        } else if (diffDays <= 7) {
+          alertBadge = `<div class="warning-alert">🔔 تنبيه: ينتهي الاشتراك خلال ${diffDays} أيام!</div>`;
+        }
+
+        container.innerHTML += `
+          <div class="store-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="store-name">${s.name}</div>
+              <span style="font-size:12px; color:${diffDays > 7 ? '#4ade80' : '#f59e0b'}; font-weight:bold;">
+                ${diffDays > 0 ? `باقي ${diffDays} يوم` : 'منتهي'}
+              </span>
+            </div>
+            <div class="store-slug">@${s.slug} | ${s.phone || 'بدون هاتف'}</div>
+
+            ${alertBadge}
+
+            <div class="sub-info-box">
+              <div>📅 <b>تاريخ البدء:</b> ${s.start_date || 'غير محدد'}</div>
+              <div>⏳ <b>تاريخ الانتهاء:</b> ${s.end_date || 'غير محدد'}</div>
+              <div>📦 <b>الخطة:</b> ${s.plan_duration ? s.plan_duration + ' شهر' : 'شهر واحد'}</div>
+            </div>
+
+            <div class="links-box">
+              <div>💻 <b>رابط الكاشير:</b><br><a href="${cashierUrl}" target="_blank">${cashierUrl}</a></div>
+              <div style="margin-top:6px;">📱 <b>رابط الزبائن:</b><br><a href="${customerUrl}" target="_blank">${customerUrl}</a></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 10px;">
+              <div class="qr-preview">
+                <canvas id="${canvasId}"></canvas>
+              </div>
+            </div>
+
+            <div class="qr-actions">
+              <button class="btn-small btn-renew" onclick="renewPlan('${s.id}', '${s.end_date}')">🔄 تجديد شهر</button>
+              <button class="btn-small" onclick="downloadQR('${canvasId}', '${s.slug}')">⬇️ تنزيل QR</button>
+              <button class="btn-small" style="background:#dc2626;" onclick="deleteStore('${s.id}')">حذف</button>
+            </div>
+          </div>
+        `;
+
+        setTimeout(() => {
+          QRCode.toCanvas(document.getElementById(canvasId), customerUrl, { width: 130, margin: 1 });
+        }, 50);
+      });
+    }
+
+    async function addNewStore() {
+      const name = document.getElementById('storeName').value.trim();
+      let slug = document.getElementById('storeSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
+      const phone = document.getElementById('storePhone').value.trim();
+      const months = parseInt(document.getElementById('planDuration').value);
+
+      if (!name || !slug) {
+        alert("يرجى إدخال اسم المحل والمعرف بالإنجليزي!");
+        return;
+      }
+
+      // تحديد تواريخ البداية والنهاية
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + months);
+
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+
+      const { error } = await supabaseClient.from('stores').insert([{
+        name,
+        slug,
+        phone,
+        plan_duration: months.toString(),
+        start_date: startDateStr,
+        end_date: endDateStr,
+        is_active: true
+      }]);
+
+      if (error) {
+        alert("خطأ: " + error.message);
+        return;
+      }
+
+      document.getElementById('storeName').value = '';
+      document.getElementById('storeSlug').value = '';
+      document.getElementById('storePhone').value = '';
+      loadStores();
+    }
+
+    async function renewPlan(id, currentEndDateStr) {
+      let baseDate = currentEndDateStr ? new Date(currentEndDateStr) : new Date();
+      const now = new Date();
+      if (baseDate < now) baseDate = now;
+
+      baseDate.setMonth(baseDate.getMonth() + 1);
+      const newEndDate = baseDate.toISOString().split('T')[0];
+
+      await supabaseClient.from('stores').update({ end_date: newEndDate }).eq('id', id);
+      loadStores();
+    }
+
+    async function deleteStore(id) {
+      if (!confirm("هل أنت متأكد من حذف هذا المحل؟")) return;
+      await supabaseClient.from('stores').delete().eq('id', id);
+      loadStores();
+    }
+
+    function downloadQR(canvasId, slug) {
+      const canvas = document.getElementById(canvasId);
+      const link = document.createElement('a');
+      link.download = `QR-${slug}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    loadStores();
+  </script>
+</body>
+</html>

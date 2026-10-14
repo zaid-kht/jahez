@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جاهز | حالة طلبك</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f8fafc;
+      text-align: center;
+      padding: 20px;
+      transition: all 0.5s ease;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 28px;
+      padding: 35px 25px;
+      width: 100%;
+      max-width: 390px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+    h2 { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+    p.sub { color: #94a3b8; font-size: 15px; line-height: 1.6; margin-bottom: 22px; }
+    input {
+      width: 100%;
+      padding: 14px;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 14px;
+      border: 2px solid #334155;
+      background: #0f172a;
+      color: #f8fafc;
+      outline: none;
+      margin-bottom: 18px;
+    }
+    .btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-primary { background: #2563eb; color: white; }
+    .btn-on-way { background: #ffffff; color: #065f46; font-size: 19px; }
+    .order-big-num {
+      font-size: 75px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+background-clip: text;
+-webkit-text-fill-color: transparent;
+      margin: 10px 0;
+    }
+
+    body.is-ready { background: radial-gradient(circle, #064e3b 0%, #022c22 100%) !important; }
+    body.is-ready .order-big-num {
+      background: linear-gradient(135deg, #a7f3d0, #34d399);
+      -webkit-background-clip: text;
+background-clip: text;
+-webkit-text-fill-color: transparent;
+    }
+
+    .stars { display: flex; justify-content: center; gap: 10px; font-size: 42px; cursor: pointer; margin: 15px 0; }
+    .star { color: #475569; transition: 0.2s; }
+    .star.active { color: #facc15; }
+    textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: white;
+      resize: none;
+      margin-bottom: 18px;
+      outline: none;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="step-input">
+      <div class="badge" id="storeBadge">نظام جاهز الذكي ⚡</div>
+      <h2>نوّرتنا يا غالي 👋</h2>
+      <p class="sub">أدخل رقم طلبك الموجود على الفاتورة، وريّح بالك وإحنا بنرنلك أول ما يجهز.</p>
+      <input type="number" id="custOrderNum" placeholder="رقم الطلب">
+      <button class="btn btn-primary" onclick="startTracking()">متابعة حالة الطلب 🔔</button>
+    </div>
+
+    <div id="step-waiting" style="display: none;">
+      <div class="badge">⏳ قيد التحضير الآن</div>
+      <h2>بنجهّزلك طلبك بحب وإتقان ☕✨</h2>
+      <div class="order-big-num" id="displayOrder"></div>
+      <p class="sub">خلّي صفحتك مفتوحة، تلفونك رح يرن أول ما يستوي طلبك!</p>
+    </div>
+
+    <div id="step-ready" style="display: none;">
+      <div class="badge" style="background: rgba(52, 211, 153, 0.2); color: #6ee7b7;">جاهز للاستلام 🎉</div>
+      <h2>طلبك اللذيذ صار جاهز! 😋</h2>
+      <div class="order-big-num" id="readyOrderNum"></div>
+      <p class="sub" style="color: #d1fae5; font-size: 16px;">اضغط على الزر تحت عشان الباريستا يعرف إنك جاي للكاونتر:</p>
+      <button class="btn btn-on-way" id="btnOnWay" onclick="handleCustomerOnWay()">أنا جاي أستلم 🏃‍♂️</button>
+    </div>
+
+    <div id="step-feedback" style="display: none;">
+      <div class="badge">صحتين وهنا مقدماً ❤️</div>
+      <h2>كيف كانت تجربتك معنا؟ ⭐</h2>
+      <p class="sub">يسعدنا تقييمك لمساعدتنا على تقديم الأفضل دائماً:</p>
+      
+      <div class="stars" id="starContainer">
+        <span class="star active" onclick="setRating(1)">★</span>
+        <span class="star active" onclick="setRating(2)">★</span>
+        <span class="star active" onclick="setRating(3)">★</span>
+        <span class="star active" onclick="setRating(4)">★</span>
+        <span class="star active" onclick="setRating(5)">★</span>
+      </div>
+
+      <textarea id="feedbackText" rows="3" placeholder="ملاحظة أو تعليق تحب توصله للإدارة؟ (اختياري)"></textarea>
+      <button class="btn btn-primary" onclick="submitRating()">إرسال التقييم ✨</button>
+    </div>
+
+    <div id="step-thanks" style="display: none;">
+      <div style="font-size: 60px; margin-bottom: 10px;">❤️☕</div>
+      <h2>شكراً لتقييمك وذوقك!</h2>
+      <p class="sub" style="font-size: 16px; color: #cbd5e1; margin-top: 10px;">
+        رأيك بصنع فرق كبير معنا.<br>
+        صحتين وألف هنا، ويومك سعيد وبنستناك في زيارتك القادمة!
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const CURRENT_STORE = urlParams.get('store') || 'default';
+
+    if (CURRENT_STORE !== 'default') {
+      document.getElementById('storeBadge').innerText = `طلبك لدى: ${CURRENT_STORE.toUpperCase()}`;
+    }
+
+    const buzzerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    buzzerAudio.loop = true;
+
+    let targetOrder = null;
+    let selectedRating = 5;
+
+    function startTracking() {
+      const val = document.getElementById('custOrderNum').value.trim();
+      if (!val) return;
+      targetOrder = val;
+
+      buzzerAudio.play().then(() => {
+        buzzerAudio.pause();
+        buzzerAudio.currentTime = 0;
+      }).catch(() => {});
+
+      document.getElementById('step-input').style.display = 'none';
+      document.getElementById('step-waiting').style.display = 'block';
+      document.getElementById('displayOrder').innerText = '#' + targetOrder;
+
+      listenForStatus();
+    }
+
+    function listenForStatus() {
+      supabaseClient.channel(`cust-channel-${CURRENT_STORE}-${targetOrder}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `order_number=eq.${targetOrder}`
+        }, payload => {
+          if (payload.new.store_slug === CURRENT_STORE) {
+            if (payload.new.status === 'ready' && document.getElementById('step-ready').style.display === 'none' && document.getElementById('step-feedback').style.display === 'none' && document.getElementById('step-thanks').style.display === 'none') {
+              triggerNotification();
+            }
+
+            if (payload.new.status === 'completed' && document.getElementById('step-thanks').style.display === 'none') {
+              openRatingScreen();
+            }
+          }
+        })
+        .subscribe();
+    }
+
+    function triggerNotification() {
+      document.getElementById('step-waiting').style.display = 'none';
+      document.getElementById('step-ready').style.display = 'block';
+      document.getElementById('readyOrderNum').innerText = '#' + targetOrder;
+      document.body.classList.add('is-ready');
+
+      buzzerAudio.play();
+      if ("vibrate" in navigator) navigator.vibrate([600, 300, 600, 300, 600]);
+    }
+
+    async function handleCustomerOnWay() {
+      buzzerAudio.pause();
+      buzzerAudio.currentTime = 0;
+      if ("vibrate" in navigator) navigator.vibrate(0);
+
+      const btn = document.getElementById('btnOnWay');
+      btn.innerText = "وصلت الإشارة.. ننتظرك عند الكاونتر ☕";
+      btn.style.opacity = "0.9";
+      btn.disabled = true;
+
+      await supabaseClient.from('orders')
+        .update({ customer_on_way: true })
+        .eq('order_number', targetOrder)
+        .eq('store_slug', CURRENT_STORE);
+    }
+
+    function openRatingScreen() {
+      buzzerAudio.pause();
+      buzzerAudio.currentTime = 0;
+      if ("vibrate" in navigator) navigator.vibrate(0);
+
+      document.body.classList.remove('is-ready');
+      document.getElementById('step-waiting').style.display = 'none';
+      document.getElementById('step-ready').style.display = 'none';
+      document.getElementById('step-feedback').style.display = 'block';
+      setRating(5);
+    }
+
+    function setRating(val) {
+      selectedRating = val;
+      const stars = document.querySelectorAll('.star');
+      stars.forEach((s, idx) => {
+        if (idx < val) s.classList.add('active');
+        else s.classList.remove('active');
+      });
+    }
+
+    async function submitRating() {
+      const comment = document.getElementById('feedbackText').value;
+      
+      await supabaseClient.from('orders').update({
+        rating: selectedRating,
+        rating_comment: comment
+      })
+      .eq('order_number', targetOrder)
+      .eq('store_slug', CURRENT_STORE);
+
+      document.getElementById('step-feedback').style.display = 'none';
+      document.getElementById('step-thanks').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

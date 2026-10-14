@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>جاهز | لوحة العمليات والمراجعات</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+    body { margin: 0; padding: 25px; background: #0b1120; color: #f8fafc; }
+    
+    .store-banner { background: #1e293b; border-radius: 14px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border: 1px solid #334155; }
+    .store-badge { background: #2563eb; color: white; padding: 4px 12px; border-radius: 8px; font-size: 14px; font-weight: bold; }
+
+    .metrics-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .metric-card { background: #1e293b; padding: 18px; border-radius: 16px; border: 1px solid #334155; text-align: center; }
+    .metric-title { font-size: 14px; color: #94a3b8; margin-bottom: 8px; }
+    .metric-value { font-size: 28px; font-weight: 800; color: #38bdf8; }
+
+    .input-box { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; }
+    input { font-size: 20px; padding: 12px 20px; width: 180px; text-align: center; border-radius: 12px; border: 2px solid #334155; background: #1e293b; color: white; outline: none; }
+    .add-btn { font-size: 18px; font-weight: 700; padding: 12px 25px; background: #2563eb; color: white; border: none; border-radius: 12px; cursor: pointer; }
+
+    .grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-bottom: 40px; }
+    .card { background: #1e293b; padding: 20px; border-radius: 18px; min-width: 180px; border: 2px solid #334155; text-align: center; transition: all 0.3s; }
+    .card.is-ready { border-color: #16a34a; background: #0f291e; }
+    .card.on-way { border-color: #f59e0b; background: #262117; }
+    .order-num { font-size: 32px; font-weight: 800; margin-bottom: 6px; }
+    .timer { font-size: 15px; color: #f59e0b; font-weight: 700; margin-bottom: 12px; }
+    .timer.stopped { color: #4ade80; }
+    .on-way-badge { background: #f59e0b; color: #000; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-bottom: 8px; display: inline-block; }
+    
+    .btn-action { width: 100%; padding: 12px; font-size: 16px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; margin-top: 6px; }
+    .ready-btn { background: #16a34a; color: white; }
+    .done-btn { background: #2563eb; color: white; }
+
+    .reviews-section { max-width: 900px; margin: 0 auto; background: #1e293b; border-radius: 20px; border: 1px solid #334155; padding: 25px; }
+    .reviews-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 12px; }
+    .reviews-title { font-size: 20px; font-weight: 800; color: #facc15; }
+    .reviews-list { display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; }
+    .review-item { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; }
+    .review-stars { color: #facc15; font-size: 18px; }
+    .review-comment { font-size: 15px; color: #cbd5e1; margin-top: 4px; text-align: right; }
+    .review-order { font-weight: bold; color: #38bdf8; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+  <!-- معرف المحل التابع له الكاشير -->
+  <div class="store-banner">
+    <div>
+      <span style="color:#94a3b8; font-size:14px;">فرع الكاشير التابع لـ:</span>
+      <h2 id="storeHeading" style="font-size:20px; display:inline-block; margin-right:8px;">جاري التحميل...</h2>
+    </div>
+    <div class="store-badge" id="storeTag">عام</div>
+  </div>
+  <div id="subWarningBanner" style="display:none; background:#78350f; color:#fde68a; border:1px solid #f59e0b; padding:12px; border-radius:12px; text-align:center; font-weight:bold; margin-bottom:15px;">
+  ⚠️ تنبيه: ينتهي اشتراك هذا الحساب قريباً! يرجى التواصل لتجديد الباقة وضمان استمرار الخدمة.
+</div>
+
+  <div class="metrics-bar">
+    <div class="metric-card">
+      <div class="metric-title">متوسط وقت الخدمة (Avg Service Time)</div>
+      <div class="metric-value" id="avgTime">--:-- دقيقة</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">الطلبات المكتملة اليوم</div>
+      <div class="metric-value" id="completedCount" style="color: #4ade80;">0</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-title">طلبات قيد الانتظار حالياً</div>
+      <div class="metric-value" id="pendingCount" style="color: #f59e0b;">0</div>
+    </div>
+  </div>
+
+  <div class="input-box">
+    <input type="number" id="orderInput" placeholder="رقم الطلب">
+    <button class="add-btn" onclick="addOrder()">+ تسجيل طلب</button>
+  </div>
+
+  <div class="grid" id="ordersGrid"></div>
+
+  <div class="reviews-section">
+    <div class="reviews-header">
+      <div class="reviews-title">قائمة المراجعات والتقييمات ⭐</div>
+      <div id="avgRatingScore" style="color: #f8fafc; font-weight: bold;">متوسط التقييم: -- / 5</div>
+    </div>
+    <div class="reviews-list" id="reviewsContainer"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // قراءة اسم المحل من الرابط (مثال: ?store=astra)
+    const urlParams = new URLSearchParams(window.location.search);
+    const CURRENT_STORE = urlParams.get('store') || 'default';
+
+    document.getElementById('storeTag').innerText = CURRENT_STORE;
+    document.getElementById('storeHeading').innerText = CURRENT_STORE.toUpperCase();
+
+    let activeOrders = [];
+
+    async function fetchOrders() {
+      const { data } = await supabaseClient
+        .from('orders')
+        .select('*')
+        .eq('store_slug', CURRENT_STORE)
+        .neq('status', 'completed')
+        .order('created_at', { ascending: true });
+
+      activeOrders = data || [];
+      renderOrders();
+      calculateAnalytics();
+      fetchReviews();
+    }
+
+    function renderOrders() {
+      const grid = document.getElementById('ordersGrid');
+      grid.innerHTML = '';
+      
+      const waitingList = activeOrders.filter(o => o.status === 'preparing');
+      document.getElementById('pendingCount').innerText = waitingList.length;
+
+      activeOrders.forEach(o => {
+        const isReady = o.status === 'ready';
+        const onWay = o.customer_on_way;
+        
+        let seconds = 0;
+        if (isReady && o.ready_at) {
+          seconds = Math.max(0, Math.floor((new Date(o.ready_at) - new Date(o.created_at)) / 1000));
+        } else {
+          seconds = Math.max(0, Math.floor((new Date() - new Date(o.created_at)) / 1000));
+        }
+
+        grid.innerHTML += `
+          <div class="card ${isReady ? 'is-ready' : ''} ${onWay ? 'on-way' : ''}">
+            <div class="order-num">#${o.order_number}</div>
+            <div class="timer ${isReady ? 'stopped' : ''}" id="timer-${o.id}">
+              ${isReady ? 'تم التجهيز في: ' : '⏱️ '} ${formatTime(seconds)}
+            </div>
+            ${onWay ? '<div class="on-way-badge">الزبون جاي بالطريق 🏃‍♂️</div>' : ''}
+            
+            ${!isReady 
+              ? `<button class="btn-action ready-btn" onclick="markReady('${o.id}')">جاهز 🔔</button>`
+              : `<button class="btn-action done-btn" onclick="markCompleted('${o.id}')">تم الاستلام والتسليم ✔</button>`
+            }
+          </div>
+        `;
+      });
+    }
+
+    async function addOrder() {
+      const input = document.getElementById('orderInput');
+      const val = input.value.trim();
+      if (!val) return;
+      
+      await supabaseClient.from('orders').insert([{
+        order_number: val,
+        status: 'preparing',
+        store_slug: CURRENT_STORE
+      }]);
+      input.value = '';
+      fetchOrders();
+    }
+
+    async function markReady(id) {
+      const now = new Date();
+      const order = activeOrders.find(o => o.id === id);
+      const prepSeconds = Math.max(0, Math.round((now - new Date(order.created_at)) / 1000));
+
+      await supabaseClient.from('orders').update({
+        status: 'ready',
+        ready_at: now.toISOString(),
+        service_time_seconds: prepSeconds
+      }).eq('id', id);
+
+      fetchOrders();
+    }
+
+    async function markCompleted(id) {
+      const now = new Date().toISOString();
+      await supabaseClient.from('orders').update({
+        status: 'completed',
+        completed_at: now
+      }).eq('id', id);
+
+      fetchOrders();
+    }
+
+    async function calculateAnalytics() {
+      const { data } = await supabaseClient
+        .from('orders')
+        .select('service_time_seconds')
+        .eq('store_slug', CURRENT_STORE)
+        .eq('status', 'completed');
+
+      if (data) {
+        document.getElementById('completedCount').innerText = data.length;
+        const valid = data.filter(d => d.service_time_seconds != null && d.service_time_seconds > 0);
+        if (valid.length > 0) {
+          const totalSec = valid.reduce((a, b) => a + b.service_time_seconds, 0);
+          const avgSec = Math.round(totalSec / valid.length);
+          document.getElementById('avgTime').innerText = formatTime(avgSec) + ' دقيقة';
+        }
+      }
+    }
+
+    async function fetchReviews() {
+      const { data } = await supabaseClient
+        .from('orders')
+        .select('order_number, rating, rating_comment, created_at')
+        .eq('store_slug', CURRENT_STORE)
+        .not('rating', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      const box = document.getElementById('reviewsContainer');
+      if (!data || data.length === 0) {
+        box.innerHTML = '<p style="color: #64748b; text-align: center;">لا توجد تقييمات مسجلة بعد اليوم لهذا الفرع.</p>';
+        return;
+      }
+
+      const avg = (data.reduce((acc, curr) => acc + curr.rating, 0) / data.length).toFixed(1);
+      document.getElementById('avgRatingScore').innerText = `متوسط التقييم: ⭐ ${avg} / 5 (${data.length} مراجعة)`;
+
+      box.innerHTML = '';
+      data.forEach(r => {
+        const starStr = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+        box.innerHTML += `
+          <div class="review-item">
+            <div>
+              <div class="review-order">طلب #${r.order_number}</div>
+              <div class="review-comment">${r.rating_comment ? r.rating_comment : '<span style="color:#64748b; font-style:italic;">بدون تعليق</span>'}</div>
+            </div>
+            <div class="review-stars">${starStr}</div>
+          </div>
+        `;
+      });
+    }
+
+    function formatTime(totalSeconds) {
+      const m = Math.floor(totalSeconds / 60);
+      const s = totalSeconds % 60;
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    setInterval(() => {
+      activeOrders.forEach(o => {
+        if (o.status === 'preparing') {
+          const el = document.getElementById(`timer-${o.id}`);
+          if (el) {
+            const sec = Math.max(0, Math.floor((new Date() - new Date(o.created_at)) / 1000));
+            el.innerText = `⏱️ ${formatTime(sec)}`;
+          }
+        }
+      });
+    }, 1000);
+
+    supabaseClient.channel(`kds-sync-${CURRENT_STORE}`).on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+      fetchOrders();
+    }).subscribe();
+
+    fetchOrders();
+  </script>
+</body>
+</html>
+async function checkStoreSubscription() {
+  const { data } = await supabaseClient.from('stores').select('end_date').eq('slug', CURRENT_STORE).single();
+  if (data && data.end_date) {
+    const diffDays = Math.ceil((new Date(data.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+    if (diffDays <= 7) {
+      const banner = document.getElementById('subWarningBanner');
+      if (banner) {
+        banner.style.display = 'block';
+        banner.innerText = `⚠️ تنبيه: يتبقى ${diffDays > 0 ? diffDays : 0} أيام على نهاية اشتراك النظام، يرجى التجديد لتجنب التوقف.`;
+      }
+    }
+  }
+}
+checkStoreSubscription();
