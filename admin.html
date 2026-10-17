@@ -11,70 +11,25 @@
     * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; margin: 0; padding: 0; }
     body { background: #0b1120; color: #f8fafc; padding: 30px 20px; }
     
-    /* شاشة تسجيل الدخول المقفلة */
-    #loginScreen {
-      min-height: 80vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .login-box {
-      background: #1e293b;
-      border: 1px solid #334155;
-      padding: 35px 30px;
-      border-radius: 24px;
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-    }
-    .login-box h2 { font-size: 24px; margin-bottom: 8px; color: #38bdf8; }
-    .login-box p { color: #94a3b8; font-size: 14px; margin-bottom: 25px; }
-    .login-box input {
-      width: 100%;
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: white;
-      padding: 14px;
-      border-radius: 12px;
-      font-size: 15px;
-      outline: none;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-    .login-box button {
-      width: 100%;
-      padding: 14px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .login-box button:hover { background: #1d4ed8; }
+    #loginScreen { min-height: 80vh; display: flex; align-items: center; justify-content: center; }
+    .login-box { background: #1e293b; border: 1px solid #334155; padding: 35px 30px; border-radius: 24px; width: 100%; max-width: 380px; text-align: center; }
+    .login-box input { width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 14px; border-radius: 12px; margin-bottom: 15px; text-align: center; }
+    .login-box button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
-    /* لوحة الإدارة الرئيسية */
     #adminContent { display: none; }
-    .container { max-width: 1050px; margin: 0 auto; }
-    
+    .container { max-width: 1100px; margin: 0 auto; }
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
     h1 { font-size: 24px; font-weight: 800; color: #38bdf8; }
-    
     .btn-logout { background: #334155; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-    .btn-logout:hover { background: #475569; }
 
     .add-store-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 25px; margin-bottom: 35px; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
-    input, select { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px 14px; border-radius: 12px; font-size: 15px; outline: none; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+    input, select { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px 14px; border-radius: 12px; font-size: 14px; outline: none; }
     input:focus, select:focus { border-color: #38bdf8; }
-    .btn-add { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-    .btn-add:hover { background: #1d4ed8; }
+    .btn-add { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; grid-column: 1/-1; }
 
-    .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-    .store-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 22px; position: relative; }
+    .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+    .store-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 22px; }
     .store-name { font-size: 22px; font-weight: 800; color: #f8fafc; }
     .store-slug { color: #94a3b8; font-size: 14px; margin-bottom: 14px; direction: ltr; text-align: right; }
     
@@ -88,32 +43,28 @@
     .qr-preview { text-align: center; margin-top: 5px; background: white; padding: 10px; border-radius: 12px; display: inline-block; }
     .qr-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 15px; }
     .btn-small { background: #334155; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
-    .btn-small:hover { background: #475569; }
     .btn-renew { background: #16a34a; }
-    .btn-renew:hover { background: #15803d; }
   </style>
 </head>
 <body>
 
-  <!-- 1. شاشة تسجيل الدخول المحمية -->
   <div id="loginScreen">
     <div class="login-box">
       <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
       <h2>منطقة الإدارة العامة</h2>
-      <p>يرجى إدخال بيانات الدخول للوصول إلى لوحة التحكم</p>
+      <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">أدخل بيانات الدخول للمتابعة</p>
       <input type="text" id="usernameInput" placeholder="اسم المستخدم">
       <input type="password" id="passwordInput" placeholder="كلمة المرور">
       <button onclick="handleLogin()">تسجيل الدخول</button>
     </div>
   </div>
 
-  <!-- 2. محتوى لوحة الإدارة (محمي) -->
   <div id="adminContent">
     <div class="container">
       <header>
         <div>
-          <h1>جاهز | إدارة المشتركين والاشتراكات 🏢</h1>
-          <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">متابعة صلاحية التراخيص وتنبيهات التجديد</p>
+          <h1>جاهز | إدارة المشتركين والعلامات التجارية 🏢</h1>
+          <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">إعدادات الهوية والتسويق واشتراكات الفروع</p>
         </div>
         <div style="display: flex; gap: 15px; align-items: center;">
           <div id="storesCount" style="font-size: 16px; font-weight: bold; color: #38bdf8;">0 محلات</div>
@@ -122,7 +73,7 @@
       </header>
 
       <div class="add-store-card">
-        <h3 style="font-size: 18px;">+ تسجيل كافيه / مطعم جديد وتحديد مدة الاشتراك</h3>
+        <h3 style="font-size: 18px;">+ تسجيل فرع / كافيه جديد بكامل بيانات الهوية والتسويق</h3>
         <div class="form-grid">
           <input type="text" id="storeName" placeholder="اسم المحل (مثلاً: أسترا كافيه)">
           <input type="text" id="storeSlug" placeholder="المعرّف بالإنجليزي (مثلاً: astra)">
@@ -133,7 +84,12 @@
             <option value="6">6 شهور (باقة نصف سنوية)</option>
             <option value="12">سنة كاملة (365 يوم)</option>
           </select>
-          <button class="btn-add" onclick="addNewStore()">إنشاء الحساب والاشتراك</button>
+          <input type="text" id="logoUrl" placeholder="رابط صورة اللوجو (Logo URL)">
+          <input type="color" id="primaryColor" value="#2563eb" title="اختر اللون المميز للكافيه">
+          <input type="text" id="googleMapsUrl" placeholder="رابط Google Maps لزيادة التقييمات">
+          <input type="text" id="promoText" placeholder="نص العرض الإعلاني وقت الانتظار">
+          <input type="text" id="promoLink" placeholder="رابط العرض (إنستغرام أو منيو أونلاين)">
+          <button class="btn-add" onclick="addNewStore()">إنشاء الحساب وتفعيل الهوية</button>
         </div>
       </div>
 
@@ -142,9 +98,8 @@
   </div>
 
   <script>
-    // بيانات تسجيل الدخول
-    const AUTH_USER = "zaid";
-    const AUTH_PASS = "0799zaid$"; // يمكنك تغيير كلمة السر من هنا
+    const AUTH_USER = "admin";
+    const AUTH_PASS = "jahez2026";
 
     function checkAuth() {
       if (sessionStorage.getItem('jahez_admin_logged') === 'true') {
@@ -157,7 +112,6 @@
     function handleLogin() {
       const u = document.getElementById('usernameInput').value.trim();
       const p = document.getElementById('passwordInput').value.trim();
-
       if (u === AUTH_USER && p === AUTH_PASS) {
         sessionStorage.setItem('jahez_admin_logged', 'true');
         document.getElementById('loginScreen').style.display = 'none';
@@ -173,7 +127,6 @@
       window.location.reload();
     }
 
-    // Supabase
     const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -190,11 +143,6 @@
       document.getElementById('storesCount').innerText = `${stores.length} مشتركين`;
       const container = document.getElementById('storesContainer');
       container.innerHTML = '';
-
-      if (stores.length === 0) {
-        container.innerHTML = '<p style="color: #64748b; grid-column: 1/-1; text-align: center;">لم تسجل أي محل بعد.</p>';
-        return;
-      }
 
       const today = new Date();
 
@@ -227,14 +175,15 @@
             ${alertBadge}
 
             <div class="sub-info-box">
-              <div>📅 <b>تاريخ البدء:</b> ${s.start_date || 'غير محدد'}</div>
-              <div>⏳ <b>تاريخ الانتهاء:</b> ${s.end_date || 'غير محدد'}</div>
-              <div>📦 <b>الخطة:</b> ${s.plan_duration ? s.plan_duration + ' شهر' : 'شهر واحد'}</div>
+              <div>🎨 <b>اللون الأساسي:</b> <span style="display:inline-block; width:12px; height:12px; background:${s.primary_color || '#2563eb'}; border-radius:50%;"></span> ${s.primary_color || 'افتراضي'}</div>
+              <div>📍 <b>جوجل مابس:</b> ${s.google_maps_url ? 'مربوط ✔' : 'غير محدد'}</div>
+              <div>📢 <b>العرض الترويجي:</b> ${s.promo_text ? s.promo_text : 'لا يوجد'}</div>
             </div>
 
             <div class="links-box">
               <div>💻 <b>رابط الكاشير:</b><br><a href="${cashierUrl}" target="_blank">${cashierUrl}</a></div>
-              <div style="margin-top:6px;">📱 <b>رابط الزبائن:</b><br><a href="${customerUrl}" target="_blank">${customerUrl}</a></div>
+              <div style="margin-top:6px;">📱 <b>رابط الزبائن العام:</b><br><a href="${customerUrl}" target="_blank">${customerUrl}</a></div>
+              <div style="margin-top:6px; color:#94a3b8; font-size:11px;">💡 لتوليد QR مع رقم الطلب تلقائياً، اربط الرابط بـ: <code>${customerUrl}&order=15</code></div>
             </div>
 
             <div style="text-align: center; margin-top: 10px;">
@@ -262,6 +211,11 @@
       let slug = document.getElementById('storeSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
       const phone = document.getElementById('storePhone').value.trim();
       const months = parseInt(document.getElementById('planDuration').value);
+      const logo_url = document.getElementById('logoUrl').value.trim();
+      const primary_color = document.getElementById('primaryColor').value;
+      const google_maps_url = document.getElementById('googleMapsUrl').value.trim();
+      const promo_text = document.getElementById('promoText').value.trim();
+      const promo_link = document.getElementById('promoLink').value.trim();
 
       if (!name || !slug) {
         alert("يرجى إدخال اسم المحل والمعرف بالإنجليزي!");
@@ -272,16 +226,18 @@
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + months);
 
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const endDateStr = endDate.toISOString().split('T')[0];
-
       const { error } = await supabaseClient.from('stores').insert([{
         name,
         slug,
         phone,
         plan_duration: months.toString(),
-        start_date: startDateStr,
-        end_date: endDateStr,
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        logo_url,
+        primary_color,
+        google_maps_url,
+        promo_text,
+        promo_link,
         is_active: true
       }]);
 
@@ -293,6 +249,10 @@
       document.getElementById('storeName').value = '';
       document.getElementById('storeSlug').value = '';
       document.getElementById('storePhone').value = '';
+      document.getElementById('logoUrl').value = '';
+      document.getElementById('googleMapsUrl').value = '';
+      document.getElementById('promoText').value = '';
+      document.getElementById('promoLink').value = '';
       loadStores();
     }
 
@@ -300,11 +260,9 @@
       let baseDate = currentEndDateStr ? new Date(currentEndDateStr) : new Date();
       const now = new Date();
       if (baseDate < now) baseDate = now;
-
       baseDate.setMonth(baseDate.getMonth() + 1);
-      const newEndDate = baseDate.toISOString().split('T')[0];
 
-      await supabaseClient.from('stores').update({ end_date: newEndDate }).eq('id', id);
+      await supabaseClient.from('stores').update({ end_date: baseDate.toISOString().split('T')[0] }).eq('id', id);
       loadStores();
     }
 
