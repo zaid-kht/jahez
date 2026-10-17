@@ -355,6 +355,24 @@
         rating_comment: comment
       }).eq('id', orderRowId);
 
+      // مسح الطلب المنتهي من الذاكرة
+      localStorage.removeItem(`jahez_order_id_${CURRENT_STORE}`);
+      localStorage.removeItem(`jahez_order_num_${CURRENT_STORE}`);
+
+      document.getElementById('step-feedback').style.display = 'none';
+      document.getElementById('step-thanks').style.display = 'block';
+
+      if (selectedRating === 5 && googleMapsUrl) {
+        document.getElementById('googleMapsSection').style.display = 'block';
+        document.getElementById('googleMapsBtn').href = googleMapsUrl;
+      }
+    } {
+      const comment = document.getElementById('feedbackText').value;
+      await supabaseClient.from('orders').update({
+        rating: selectedRating,
+        rating_comment: comment
+      }).eq('id', orderRowId);
+
       document.getElementById('step-feedback').style.display = 'none';
       document.getElementById('step-thanks').style.display = 'block';
 
@@ -364,7 +382,82 @@
       }
     }
 
-    initCustomerSession();
-  </script>
+async function initCustomerSession() {
+      // 1. تحميل بيانات وهوية المحل
+      const { data: store } = await supabaseClient.from('stores').select('*').eq('slug', CURRENT_STORE).single();
+      if (store) {
+        if (store.primary_color) document.documentElement.style.setProperty('--brand-color', store.primary_color);
+        if (store.logo_url) document.getElementById('logoContainer').innerHTML = `<img src="${store.logo_url}" class="brand-logo" alt="${store.name}">`;
+        if (store.promo_text) {
+          document.getElementById('promoBanner').style.display = 'block';
+          document.getElementById('promoTextTag').innerText = store.promo_text;
+          if (store.promo_link) document.getElementById('promoLinkTag').href = store.promo_link;
+        }
+        if (store.google_maps_url) googleMapsUrl = store.google_maps_url;
+      }
+
+      // 2. فحص إذا كان الزبون مسجل مسبقاً في هذا الهاتف اليوم
+      const savedOrderId = localStorage.getItem(`jahez_order_id_${CURRENT_STORE}`);
+      const savedOrderNum = localStorage.getItem(`jahez_order_num_${CURRENT_STORE}`);
+
+      if (savedOrderId && savedOrderNum) {
+        // التحقق من حالة الطلب المحفوظ في السيرفر
+        const { data: existingOrder } = await supabaseClient
+          .from('orders')
+          .select('*')
+          .eq('id', savedOrderId)
+          .single();
+
+        // إذا كان الطلب موجود وما زال قيد التحضير أو جاهز للاستلام
+        if (existingOrder && existingOrder.status !== 'completed') {
+          orderRowId = existingOrder.id;
+          orderDisplayNum = existingOrder.order_number;
+          document.getElementById('displayOrder').innerText = '#' + orderDisplayNum;
+
+          if (existingOrder.rating_comment) {
+            document.getElementById('displayInvoiceText').innerText = `أوردر رقم: ${existingOrder.rating_comment}`;
+          }
+
+          if (existingOrder.status === 'ready') {
+            triggerNotification(existingOrder.rating_comment || orderDisplayNum);
+          }
+
+          listenForOrderUpdates();
+          return; // إيقاف الدالة هنا لمنع إنشاء طلب مكرر!
+        } else {
+          // إذا كان الطلب القديم مكتمل، نحذفه من الذاكرة لإنشاء طلب جديد
+          localStorage.removeItem(`jahez_order_id_${CURRENT_STORE}`);
+          localStorage.removeItem(`jahez_order_num_${CURRENT_STORE}`);
+        }
+      }
+
+      // 3. إنشاء طلب جديد فقط لأول مرة يدخل فيها الزبون
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const { count } = await supabaseClient
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('store_slug', CURRENT_STORE)
+        .gte('created_at', todayStart.toISOString());
+
+      orderDisplayNum = (count || 0) + 1;
+      document.getElementById('displayOrder').innerText = '#' + orderDisplayNum;
+
+      const { data: newOrder } = await supabaseClient.from('orders').insert([{
+        order_number: orderDisplayNum.toString(),
+        status: 'preparing',
+        store_slug: CURRENT_STORE
+      }]).select().single();
+
+      if (newOrder) {
+        orderRowId = newOrder.id;
+        // حفظ بيانات الطلب في ذاكرة المتصفح
+        localStorage.setItem(`jahez_order_id_${CURRENT_STORE}`, orderRowId);
+        localStorage.setItem(`jahez_order_num_${CURRENT_STORE}`, orderDisplayNum);
+        
+        listenForOrderUpdates();
+      }
+    }  </script>
 </body>
 </html>
