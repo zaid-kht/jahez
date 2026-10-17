@@ -8,6 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+    :root {
+      --brand-color: #2563eb;
+    }
     body {
       min-height: 100vh;
       display: flex;
@@ -26,14 +29,15 @@
       border-radius: 28px;
       padding: 35px 25px;
       width: 100%;
-      max-width: 390px;
+      max-width: 400px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     }
+    .brand-logo { max-height: 55px; max-width: 160px; margin-bottom: 15px; object-fit: contain; }
     .badge {
       display: inline-block;
       padding: 6px 16px;
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
+      background: rgba(255, 255, 255, 0.1);
+      color: #38bdf8;
       border-radius: 20px;
       font-size: 14px;
       font-weight: 700;
@@ -64,24 +68,35 @@
       cursor: pointer;
       transition: 0.2s;
     }
-    .btn-primary { background: #2563eb; color: white; }
+    .btn-primary { background: var(--brand-color); color: white; }
     .btn-on-way { background: #ffffff; color: #065f46; font-size: 19px; }
     .order-big-num {
       font-size: 75px;
       font-weight: 800;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
-background-clip: text;
--webkit-text-fill-color: transparent;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
       margin: 10px 0;
     }
+
+    /* بنر العرض الترويجي */
+    .promo-box {
+      margin-top: 25px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      display: none;
+    }
+    .promo-box a { color: #facc15; text-decoration: none; font-weight: bold; font-size: 14px; display: block; }
 
     body.is-ready { background: radial-gradient(circle, #064e3b 0%, #022c22 100%) !important; }
     body.is-ready .order-big-num {
       background: linear-gradient(135deg, #a7f3d0, #34d399);
       -webkit-background-clip: text;
-background-clip: text;
--webkit-text-fill-color: transparent;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .stars { display: flex; justify-content: center; gap: 10px; font-size: 42px; cursor: pointer; margin: 15px 0; }
@@ -99,26 +114,52 @@ background-clip: text;
       outline: none;
       font-size: 15px;
     }
+    .btn-google {
+      background: #ea4335;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-decoration: none;
+      margin-top: 15px;
+      padding: 14px;
+      border-radius: 14px;
+      font-weight: bold;
+      width: 100%;
+    }
   </style>
 </head>
 <body>
 
   <div class="card">
+    <div id="logoContainer"></div>
+
+    <!-- 1. إدخال الرقم (يتم تخطيه تلقائياً إذا وُجد رقم بالرابط) -->
     <div id="step-input">
       <div class="badge" id="storeBadge">نظام جاهز الذكي ⚡</div>
       <h2>نوّرتنا يا غالي 👋</h2>
       <p class="sub">أدخل رقم طلبك الموجود على الفاتورة، وريّح بالك وإحنا بنرنلك أول ما يجهز.</p>
       <input type="number" id="custOrderNum" placeholder="رقم الطلب">
-      <button class="btn btn-primary" onclick="startTracking()">متابعة حالة الطلب 🔔</button>
+      <button class="btn btn-primary" id="btnTrack" onclick="startTracking()">متابعة حالة الطلب 🔔</button>
     </div>
 
+    <!-- 2. قيد التحضير وبنر العرض الترويجي -->
     <div id="step-waiting" style="display: none;">
       <div class="badge">⏳ قيد التحضير الآن</div>
       <h2>بنجهّزلك طلبك بحب وإتقان ☕✨</h2>
       <div class="order-big-num" id="displayOrder"></div>
       <p class="sub">خلّي صفحتك مفتوحة، تلفونك رح يرن أول ما يستوي طلبك!</p>
+      
+      <!-- البنر الترويجي -->
+      <div class="promo-box" id="promoBanner">
+        <a id="promoLinkTag" href="#" target="_blank">
+          🎁 <span id="promoTextTag"></span>
+        </a>
+      </div>
     </div>
 
+    <!-- 3. الجاهزية -->
     <div id="step-ready" style="display: none;">
       <div class="badge" style="background: rgba(52, 211, 153, 0.2); color: #6ee7b7;">جاهز للاستلام 🎉</div>
       <h2>طلبك اللذيذ صار جاهز! 😋</h2>
@@ -127,6 +168,7 @@ background-clip: text;
       <button class="btn btn-on-way" id="btnOnWay" onclick="handleCustomerOnWay()">أنا جاي أستلم 🏃‍♂️</button>
     </div>
 
+    <!-- 4. واجهة التقييم -->
     <div id="step-feedback" style="display: none;">
       <div class="badge">صحتين وهنا مقدماً ❤️</div>
       <h2>كيف كانت تجربتك معنا؟ ⭐</h2>
@@ -144,13 +186,21 @@ background-clip: text;
       <button class="btn btn-primary" onclick="submitRating()">إرسال التقييم ✨</button>
     </div>
 
+    <!-- 5. صفحة الشكر ومعزز خرائط Google -->
     <div id="step-thanks" style="display: none;">
       <div style="font-size: 60px; margin-bottom: 10px;">❤️☕</div>
       <h2>شكراً لتقييمك وذوقك!</h2>
       <p class="sub" style="font-size: 16px; color: #cbd5e1; margin-top: 10px;">
-        رأيك بصنع فرق كبير معنا.<br>
-        صحتين وألف هنا، ويومك سعيد وبنستناك في زيارتك القادمة!
+        صحتين وألف هنا، يومك سعيد وبنستناك في زيارتك القادمة!
       </p>
+
+      <!-- يظهر زر جوجل مابس فقط إذا كان التقييم 5 نجوم وكان الرابط متوفراً -->
+      <div id="googleMapsSection" style="display: none; margin-top: 20px;">
+        <p style="font-size: 14px; color: #facc15; margin-bottom: 8px;">بما إن تجربتك ممتازة، يسعدنا مشاركتها على خرائط جوجل ⭐:</p>
+        <a id="googleMapsBtn" href="#" target="_blank" class="btn-google">
+          📍 شارك تقييمك على Google Maps
+        </a>
+      </div>
     </div>
   </div>
 
@@ -161,16 +211,41 @@ background-clip: text;
 
     const urlParams = new URLSearchParams(window.location.search);
     const CURRENT_STORE = urlParams.get('store') || 'default';
+    const DYNAMIC_ORDER = urlParams.get('order'); // قراءة رقم الطلب من الرابط
 
-    if (CURRENT_STORE !== 'default') {
-      document.getElementById('storeBadge').innerText = `طلبك لدى: ${CURRENT_STORE.toUpperCase()}`;
-    }
+    let googleMapsUrl = null;
+    let targetOrder = null;
+    let selectedRating = 5;
 
     const buzzerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     buzzerAudio.loop = true;
 
-    let targetOrder = null;
-    let selectedRating = 5;
+    // تحميل هوية المحل وإعلاناته
+    async function loadStoreBranding() {
+      const { data } = await supabaseClient.from('stores').select('*').eq('slug', CURRENT_STORE).single();
+      if (data) {
+        if (data.primary_color) {
+          document.documentElement.style.setProperty('--brand-color', data.primary_color);
+        }
+        if (data.logo_url) {
+          document.getElementById('logoContainer').innerHTML = `<img src="${data.logo_url}" class="brand-logo" alt="${data.name}">`;
+        }
+        if (data.promo_text) {
+          document.getElementById('promoBanner').style.display = 'block';
+          document.getElementById('promoTextTag').innerText = data.promo_text;
+          if (data.promo_link) document.getElementById('promoLinkTag').href = data.promo_link;
+        }
+        if (data.google_maps_url) {
+          googleMapsUrl = data.google_maps_url;
+        }
+      }
+
+      // إذا كان رقم الطلب ممرراً بالرابط مسبقاً (?order=45) نبدأ التتبع تلقائياً
+      if (DYNAMIC_ORDER) {
+        document.getElementById('custOrderNum').value = DYNAMIC_ORDER;
+        startTracking();
+      }
+    }
 
     function startTracking() {
       const val = document.getElementById('custOrderNum').value.trim();
@@ -269,7 +344,15 @@ background-clip: text;
 
       document.getElementById('step-feedback').style.display = 'none';
       document.getElementById('step-thanks').style.display = 'block';
+
+      // معزز تقييمات جوجل مابس: يظهر فقط إذا قيّم 5 نجوم ورابط جوجل موجود
+      if (selectedRating === 5 && googleMapsUrl) {
+        document.getElementById('googleMapsSection').style.display = 'block';
+        document.getElementById('googleMapsBtn').href = googleMapsUrl;
+      }
     }
+
+    loadStoreBranding();
   </script>
 </body>
 </html>
