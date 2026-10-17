@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>جاهز | لوحة العمليات والمراجعات</title>
+  <title>جاهز | لوحة العمليات اليومية</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
@@ -46,29 +46,28 @@
 </head>
 <body>
 
-  <!-- معرف المحل التابع له الكاشير -->
   <div class="store-banner">
     <div>
-      <span style="color:#94a3b8; font-size:14px;">فرع الكاشير التابع لـ:</span>
+      <span style="color:#94a3b8; font-size:14px;">لوحة تشغيل فرع:</span>
       <h2 id="storeHeading" style="font-size:20px; display:inline-block; margin-right:8px;">جاري التحميل...</h2>
     </div>
     <div class="store-badge" id="storeTag">عام</div>
   </div>
-  <div id="subWarningBanner" style="display:none; background:#78350f; color:#fde68a; border:1px solid #f59e0b; padding:12px; border-radius:12px; text-align:center; font-weight:bold; margin-bottom:15px;">
-  ⚠️ تنبيه: ينتهي اشتراك هذا الحساب قريباً! يرجى التواصل لتجديد الباقة وضمان استمرار الخدمة.
-</div>
 
+  <div id="subWarningBanner" style="display:none; background:#78350f; color:#fde68a; border:1px solid #f59e0b; padding:12px; border-radius:12px; text-align:center; font-weight:bold; margin-bottom:15px;"></div>
+
+  <!-- مقاييس اليوم المفلترة تلقائياً -->
   <div class="metrics-bar">
     <div class="metric-card">
-      <div class="metric-title">متوسط وقت الخدمة (Avg Service Time)</div>
+      <div class="metric-title">متوسط وقت الخدمة اليوم (Avg Time)</div>
       <div class="metric-value" id="avgTime">--:-- دقيقة</div>
     </div>
     <div class="metric-card">
-      <div class="metric-title">الطلبات المكتملة اليوم</div>
+      <div class="metric-title">طلبات اليوم المكتملة</div>
       <div class="metric-value" id="completedCount" style="color: #4ade80;">0</div>
     </div>
     <div class="metric-card">
-      <div class="metric-title">طلبات قيد الانتظار حالياً</div>
+      <div class="metric-title">طلبات بالانتظار حالياً</div>
       <div class="metric-value" id="pendingCount" style="color: #f59e0b;">0</div>
     </div>
   </div>
@@ -82,7 +81,7 @@
 
   <div class="reviews-section">
     <div class="reviews-header">
-      <div class="reviews-title">قائمة المراجعات والتقييمات ⭐</div>
+      <div class="reviews-title">مراجعات وتقييمات اليوم ⭐</div>
       <div id="avgRatingScore" style="color: #f8fafc; font-weight: bold;">متوسط التقييم: -- / 5</div>
     </div>
     <div class="reviews-list" id="reviewsContainer"></div>
@@ -93,20 +92,30 @@
     const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // قراءة اسم المحل من الرابط (مثال: ?store=astra)
     const urlParams = new URLSearchParams(window.location.search);
     const CURRENT_STORE = urlParams.get('store') || 'default';
 
     document.getElementById('storeTag').innerText = CURRENT_STORE;
     document.getElementById('storeHeading').innerText = CURRENT_STORE.toUpperCase();
 
+    // بداية تاريخ اليوم من الساعة 00:00:00 (فلترة تصفير العداد)
+    function getTodayStartISO() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return today.toISOString();
+    }
+
     let activeOrders = [];
 
     async function fetchOrders() {
-      const { data } = await supabaseClient
+      const todayStart = getTodayStartISO();
+
+      // فلترة: طلبات هذا المتجر + قيد التحضير أو الجاهزة لليوم فقط
+      const { data, error } = await supabaseClient
         .from('orders')
         .select('*')
         .eq('store_slug', CURRENT_STORE)
+        .gte('created_at', todayStart)
         .neq('status', 'completed')
         .order('created_at', { ascending: true });
 
@@ -190,10 +199,12 @@
     }
 
     async function calculateAnalytics() {
+      const todayStart = getTodayStartISO();
       const { data } = await supabaseClient
         .from('orders')
         .select('service_time_seconds')
         .eq('store_slug', CURRENT_STORE)
+        .gte('created_at', todayStart)
         .eq('status', 'completed');
 
       if (data) {
@@ -203,15 +214,19 @@
           const totalSec = valid.reduce((a, b) => a + b.service_time_seconds, 0);
           const avgSec = Math.round(totalSec / valid.length);
           document.getElementById('avgTime').innerText = formatTime(avgSec) + ' دقيقة';
+        } else {
+          document.getElementById('avgTime').innerText = '--:-- دقيقة';
         }
       }
     }
 
     async function fetchReviews() {
+      const todayStart = getTodayStartISO();
       const { data } = await supabaseClient
         .from('orders')
         .select('order_number, rating, rating_comment, created_at')
         .eq('store_slug', CURRENT_STORE)
+        .gte('created_at', todayStart)
         .not('rating', 'is', null)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -223,7 +238,7 @@
       }
 
       const avg = (data.reduce((acc, curr) => acc + curr.rating, 0) / data.length).toFixed(1);
-      document.getElementById('avgRatingScore').innerText = `متوسط التقييم: ⭐ ${avg} / 5 (${data.length} مراجعة)`;
+      document.getElementById('avgRatingScore').innerText = `متوسط اليوم: ⭐ ${avg} / 5 (${data.length} مراجعة)`;
 
       box.innerHTML = '';
       data.forEach(r => {
@@ -258,25 +273,26 @@
       });
     }, 1000);
 
+    async function checkStoreSubscription() {
+      const { data } = await supabaseClient.from('stores').select('end_date').eq('slug', CURRENT_STORE).single();
+      if (data && data.end_date) {
+        const diffDays = Math.ceil((new Date(data.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 7) {
+          const banner = document.getElementById('subWarningBanner');
+          if (banner) {
+            banner.style.display = 'block';
+            banner.innerText = `⚠️ تنبيه: يتبقى ${diffDays > 0 ? diffDays : 0} أيام على نهاية اشتراك هذا الفرع، يرجى التواصل مع الإدارة للتجديد.`;
+          }
+        }
+      }
+    }
+
     supabaseClient.channel(`kds-sync-${CURRENT_STORE}`).on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
       fetchOrders();
     }).subscribe();
 
+    checkStoreSubscription();
     fetchOrders();
   </script>
 </body>
 </html>
-async function checkStoreSubscription() {
-  const { data } = await supabaseClient.from('stores').select('end_date').eq('slug', CURRENT_STORE).single();
-  if (data && data.end_date) {
-    const diffDays = Math.ceil((new Date(data.end_date) - new Date()) / (1000 * 60 * 60 * 24));
-    if (diffDays <= 7) {
-      const banner = document.getElementById('subWarningBanner');
-      if (banner) {
-        banner.style.display = 'block';
-        banner.innerText = `⚠️ تنبيه: يتبقى ${diffDays > 0 ? diffDays : 0} أيام على نهاية اشتراك النظام، يرجى التجديد لتجنب التوقف.`;
-      }
-    }
-  }
-}
-checkStoreSubscription();
