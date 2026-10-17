@@ -46,7 +46,7 @@
     .btn {
       width: 100%;
       padding: 16px;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       border-radius: 14px;
       border: none;
@@ -54,6 +54,16 @@
       transition: 0.2s;
     }
     .btn-primary { background: var(--brand-color); color: white; }
+    .btn-sound-activate {
+      background: #16a34a;
+      color: white;
+      margin-bottom: 15px;
+      animation: pulse-btn 1.5s infinite alternate;
+    }
+    @keyframes pulse-btn {
+      from { transform: scale(1); }
+      to { transform: scale(1.03); }
+    }
     .btn-on-way { background: #ffffff; color: #065f46; font-size: 19px; }
     .order-big-num {
       font-size: 80px;
@@ -64,15 +74,6 @@
       -webkit-text-fill-color: transparent;
       margin: 10px 0;
     }
-    .promo-box {
-      margin-top: 25px;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px dashed rgba(255, 255, 255, 0.2);
-      border-radius: 16px;
-      display: none;
-    }
-    .promo-box a { color: #facc15; text-decoration: none; font-weight: bold; font-size: 14px; display: block; }
 
     body.is-ready { background: radial-gradient(circle, #064e3b 0%, #022c22 100%) !important; }
     body.is-ready .order-big-num {
@@ -118,31 +119,31 @@
   <div class="card">
     <div id="logoContainer"></div>
 
-    <!-- 1. شاشة الانتظار الفورية (بدون أي إدخال من الزبون) -->
+    <!-- الانتظار -->
     <div id="step-waiting">
       <div class="badge" id="storeBadge">⏳ تم ربط جهازك بالكاشير</div>
+      
+      <!-- زر اللمسة الأولية لتأكيد الرنين وتخطي منع المتصفح -->
+      <button class="btn btn-sound-activate" id="btnAudioUnlock" onclick="unlockAudioSystem()">
+        🔔 اضغط هنا لتأكيد تفعيل الرنين والهزاز
+      </button>
+
       <h2>بنجهّزلك طلبك بحب وإتقان ☕✨</h2>
       <div style="font-size: 14px; color: #94a3b8;">رقم جهازك في الطابور:</div>
       <div class="order-big-num" id="displayOrder">...</div>
-      <p class="sub" id="displayInvoiceText">جاري تأكيد رقم الفاتورة مع الكاشير...</p>
-      
-      <div class="promo-box" id="promoBanner">
-        <a id="promoLinkTag" href="#" target="_blank">
-          🎁 <span id="promoTextTag"></span>
-        </a>
-      </div>
+      <p class="sub" id="displayInvoiceText">جاري تسجيل طلبك عند الكاشير...</p>
     </div>
 
-    <!-- 2. الجاهزية والرنين -->
+    <!-- الجاهزية والرنين المستمر -->
     <div id="step-ready" style="display: none;">
       <div class="badge" style="background: rgba(52, 211, 153, 0.2); color: #6ee7b7;">جاهز للاستلام 🎉</div>
       <h2>طلبك اللذيذ صار جاهز! 😋</h2>
       <div class="order-big-num" id="readyOrderNum"></div>
-      <p class="sub" style="color: #d1fae5; font-size: 16px;">اضغط على الزر تحت عشان الباريستا يعرف إنك جاي للكاونتر:</p>
+      <p class="sub" style="color: #d1fae5; font-size: 16px;">اضغط على الزر تحت لإيقاف الرنين وإبلاغ الباريستا:</p>
       <button class="btn btn-on-way" id="btnOnWay" onclick="handleCustomerOnWay()">أنا جاي أستلم 🏃‍♂️</button>
     </div>
 
-    <!-- 3. التقييم -->
+    <!-- التقييم -->
     <div id="step-feedback" style="display: none;">
       <div class="badge">صحتين وهنا مقدماً ❤️</div>
       <h2>كيف كانت تجربتك معنا؟ ⭐</h2>
@@ -160,7 +161,7 @@
       <button class="btn btn-primary" onclick="submitRating()">إرسال التقييم ✨</button>
     </div>
 
-    <!-- 4. الشكر وجوجل مابس -->
+    <!-- الشكر وجوجل مابس -->
     <div id="step-thanks" style="display: none;">
       <div style="font-size: 60px; margin-bottom: 10px;">❤️☕</div>
       <h2>شكراً لتقييمك وذوقك!</h2>
@@ -168,7 +169,7 @@
         صحتين وألف هنا، يومك سعيد وبنستناك في زيارتك القادمة!
       </p>
       <div id="googleMapsSection" style="display: none; margin-top: 20px;">
-        <p style="font-size: 14px; color: #facc15; margin-bottom: 8px;">بما إن تجربتك ممتازة، يسعدنا مشاركتها على خرائط جوجل ⭐:</p>
+        <p style="font-size: 14px; color: #facc15; margin-bottom: 8px;">يسعدنا مشاركة رأيك الإيجابي على Google Maps ⭐:</p>
         <a id="googleMapsBtn" href="#" target="_blank" class="btn-google">
           📍 شارك تقييمك على Google Maps
         </a>
@@ -189,30 +190,79 @@
     let orderDisplayNum = null;
     let selectedRating = 5;
 
-    const buzzerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    buzzerAudio.loop = true;
+    // نظام الصوت المباشر عبر Web Audio API (مستحيل حجبه أو تأخيره)
+    let audioCtx = null;
+    let buzzerInterval = null;
 
-    // تشغيل تلقائي فور فتح الزبون للصفحة
+    function unlockAudioSystem() {
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        audioCtx.resume();
+      } catch (e) {}
+
+      // طلب إذن الإشعارات لشاشة القفل
+      if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+
+      // إبقاء الشاشة مستيقظة
+      if ('wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').catch(()=>{});
+      }
+
+      const btn = document.getElementById('btnAudioUnlock');
+      btn.innerText = "✔ تم تفعيل الرنين والهزاز بنجاح";
+      btn.style.background = "#334155";
+      btn.style.animation = "none";
+      btn.disabled = true;
+    }
+
+    function playBeepTone() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // تردد نغمة تنبيه واضحة
+      gain.gain.setValueAtTime(1, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+    }
+
+    function startFullBuzzer() {
+      playBeepTone();
+      buzzerInterval = setInterval(() => {
+        playBeepTone();
+      }, 700);
+
+      if ("vibrate" in navigator) {
+        navigator.vibrate([500, 250, 500, 250, 500]);
+      }
+
+      // إرسال إشعار فوري لشاشة القفل لو خرج من المتصفح
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("طلبك جاهز للاستلام! 🎉", {
+          body: "تفضل باستلام طلبك من الكاونتر الآن.. صحتين وهنا!",
+          icon: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png"
+        });
+      }
+    }
+
+    function stopFullBuzzer() {
+      if (buzzerInterval) clearInterval(buzzerInterval);
+      if ("vibrate" in navigator) navigator.vibrate(0);
+    }
+
     async function initCustomerSession() {
-      // تحميل بيانات المحل
       const { data: store } = await supabaseClient.from('stores').select('*').eq('slug', CURRENT_STORE).single();
       if (store) {
         if (store.primary_color) document.documentElement.style.setProperty('--brand-color', store.primary_color);
         if (store.logo_url) document.getElementById('logoContainer').innerHTML = `<img src="${store.logo_url}" class="brand-logo" alt="${store.name}">`;
-        if (store.promo_text) {
-          document.getElementById('promoBanner').style.display = 'block';
-          document.getElementById('promoTextTag').innerText = store.promo_text;
-          if (store.promo_link) document.getElementById('promoLinkTag').href = store.promo_link;
-        }
         if (store.google_maps_url) googleMapsUrl = store.google_maps_url;
       }
 
-      // تفعيل تشغيل الصوت الصامت مقدماً
-      document.body.addEventListener('click', () => {
-        buzzerAudio.play().then(() => { buzzerAudio.pause(); buzzerAudio.currentTime = 0; }).catch(()=>{});
-      }, { once: true });
-
-      // حساب رقم تسلسلي تلقائي للزبون لهذا اليوم
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
@@ -225,7 +275,6 @@
       orderDisplayNum = (count || 0) + 1;
       document.getElementById('displayOrder').innerText = '#' + orderDisplayNum;
 
-      // تسجيل الطلب فوراً في الكاشير بانتظار ربط الفاتورة
       const { data: newOrder } = await supabaseClient.from('orders').insert([{
         order_number: orderDisplayNum.toString(),
         status: 'preparing',
@@ -246,17 +295,14 @@
           table: 'orders',
           filter: `id=eq.${orderRowId}`
         }, payload => {
-          // إذا الكاشير ربط رقم الفاتورة أو الاسم
           if (payload.new.rating_comment && payload.new.status === 'preparing') {
-            document.getElementById('displayInvoiceText').innerText = `طلبك: ${payload.new.rating_comment}`;
+            document.getElementById('displayInvoiceText').innerText = `أوردر رقم: ${payload.new.rating_comment}`;
           }
 
-          // الكاشير ضغط جاهز
           if (payload.new.status === 'ready' && document.getElementById('step-ready').style.display === 'none') {
             triggerNotification(payload.new.rating_comment || orderDisplayNum);
           }
 
-          // الكاشير ضغط تم التسليم
           if (payload.new.status === 'completed' && document.getElementById('step-thanks').style.display === 'none') {
             openRatingScreen();
           }
@@ -270,14 +316,11 @@
       document.getElementById('readyOrderNum').innerText = '#' + label;
       document.body.classList.add('is-ready');
 
-      buzzerAudio.play().catch(()=>{});
-      if ("vibrate" in navigator) navigator.vibrate([600, 300, 600, 300, 600]);
+      startFullBuzzer();
     }
 
     async function handleCustomerOnWay() {
-      buzzerAudio.pause();
-      buzzerAudio.currentTime = 0;
-      if ("vibrate" in navigator) navigator.vibrate(0);
+      stopFullBuzzer();
 
       const btn = document.getElementById('btnOnWay');
       btn.innerText = "وصلت الإشارة.. ننتظرك عند الكاونتر ☕";
@@ -288,10 +331,7 @@
     }
 
     function openRatingScreen() {
-      buzzerAudio.pause();
-      buzzerAudio.currentTime = 0;
-      if ("vibrate" in navigator) navigator.vibrate(0);
-
+      stopFullBuzzer();
       document.body.classList.remove('is-ready');
       document.getElementById('step-waiting').style.display = 'none';
       document.getElementById('step-ready').style.display = 'none';
