@@ -8,9 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-    :root {
-      --brand-color: #2563eb;
-    }
+    :root { --brand-color: #2563eb; }
     body {
       min-height: 100vh;
       display: flex;
@@ -45,19 +43,6 @@
     }
     h2 { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
     p.sub { color: #94a3b8; font-size: 15px; line-height: 1.6; margin-bottom: 22px; }
-    input {
-      width: 100%;
-      padding: 14px;
-      font-size: 24px;
-      font-weight: 700;
-      text-align: center;
-      border-radius: 14px;
-      border: 2px solid #334155;
-      background: #0f172a;
-      color: #f8fafc;
-      outline: none;
-      margin-bottom: 18px;
-    }
     .btn {
       width: 100%;
       padding: 16px;
@@ -71,7 +56,7 @@
     .btn-primary { background: var(--brand-color); color: white; }
     .btn-on-way { background: #ffffff; color: #065f46; font-size: 19px; }
     .order-big-num {
-      font-size: 75px;
+      font-size: 80px;
       font-weight: 800;
       background: linear-gradient(135deg, #38bdf8, #818cf8);
       -webkit-background-clip: text;
@@ -79,8 +64,6 @@
       -webkit-text-fill-color: transparent;
       margin: 10px 0;
     }
-
-    /* بنر العرض الترويجي */
     .promo-box {
       margin-top: 25px;
       padding: 14px;
@@ -135,23 +118,14 @@
   <div class="card">
     <div id="logoContainer"></div>
 
-    <!-- 1. إدخال الرقم (يتم تخطيه تلقائياً إذا وُجد رقم بالرابط) -->
-    <div id="step-input">
-      <div class="badge" id="storeBadge">نظام جاهز الذكي ⚡</div>
-      <h2>نوّرتنا يا غالي 👋</h2>
-      <p class="sub">أدخل رقم طلبك الموجود على الفاتورة، وريّح بالك وإحنا بنرنلك أول ما يجهز.</p>
-      <input type="number" id="custOrderNum" placeholder="رقم الطلب">
-      <button class="btn btn-primary" id="btnTrack" onclick="startTracking()">متابعة حالة الطلب 🔔</button>
-    </div>
-
-    <!-- 2. قيد التحضير وبنر العرض الترويجي -->
-    <div id="step-waiting" style="display: none;">
-      <div class="badge">⏳ قيد التحضير الآن</div>
+    <!-- 1. شاشة الانتظار الفورية (بدون أي إدخال من الزبون) -->
+    <div id="step-waiting">
+      <div class="badge" id="storeBadge">⏳ تم ربط جهازك بالكاشير</div>
       <h2>بنجهّزلك طلبك بحب وإتقان ☕✨</h2>
-      <div class="order-big-num" id="displayOrder"></div>
-      <p class="sub">خلّي صفحتك مفتوحة، تلفونك رح يرن أول ما يستوي طلبك!</p>
+      <div style="font-size: 14px; color: #94a3b8;">رقم جهازك في الطابور:</div>
+      <div class="order-big-num" id="displayOrder">...</div>
+      <p class="sub" id="displayInvoiceText">جاري تأكيد رقم الفاتورة مع الكاشير...</p>
       
-      <!-- البنر الترويجي -->
       <div class="promo-box" id="promoBanner">
         <a id="promoLinkTag" href="#" target="_blank">
           🎁 <span id="promoTextTag"></span>
@@ -159,7 +133,7 @@
       </div>
     </div>
 
-    <!-- 3. الجاهزية -->
+    <!-- 2. الجاهزية والرنين -->
     <div id="step-ready" style="display: none;">
       <div class="badge" style="background: rgba(52, 211, 153, 0.2); color: #6ee7b7;">جاهز للاستلام 🎉</div>
       <h2>طلبك اللذيذ صار جاهز! 😋</h2>
@@ -168,7 +142,7 @@
       <button class="btn btn-on-way" id="btnOnWay" onclick="handleCustomerOnWay()">أنا جاي أستلم 🏃‍♂️</button>
     </div>
 
-    <!-- 4. واجهة التقييم -->
+    <!-- 3. التقييم -->
     <div id="step-feedback" style="display: none;">
       <div class="badge">صحتين وهنا مقدماً ❤️</div>
       <h2>كيف كانت تجربتك معنا؟ ⭐</h2>
@@ -186,15 +160,13 @@
       <button class="btn btn-primary" onclick="submitRating()">إرسال التقييم ✨</button>
     </div>
 
-    <!-- 5. صفحة الشكر ومعزز خرائط Google -->
+    <!-- 4. الشكر وجوجل مابس -->
     <div id="step-thanks" style="display: none;">
       <div style="font-size: 60px; margin-bottom: 10px;">❤️☕</div>
       <h2>شكراً لتقييمك وذوقك!</h2>
       <p class="sub" style="font-size: 16px; color: #cbd5e1; margin-top: 10px;">
         صحتين وألف هنا، يومك سعيد وبنستناك في زيارتك القادمة!
       </p>
-
-      <!-- يظهر زر جوجل مابس فقط إذا كان التقييم 5 نجوم وكان الرابط متوفراً -->
       <div id="googleMapsSection" style="display: none; margin-top: 20px;">
         <p style="font-size: 14px; color: #facc15; margin-bottom: 8px;">بما إن تجربتك ممتازة، يسعدنا مشاركتها على خرائط جوجل ⭐:</p>
         <a id="googleMapsBtn" href="#" target="_blank" class="btn-google">
@@ -211,87 +183,94 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const CURRENT_STORE = urlParams.get('store') || 'default';
-    const DYNAMIC_ORDER = urlParams.get('order'); // قراءة رقم الطلب من الرابط
 
     let googleMapsUrl = null;
-    let targetOrder = null;
+    let orderRowId = null;
+    let orderDisplayNum = null;
     let selectedRating = 5;
 
     const buzzerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
     buzzerAudio.loop = true;
 
-    // تحميل هوية المحل وإعلاناته
-    async function loadStoreBranding() {
-      const { data } = await supabaseClient.from('stores').select('*').eq('slug', CURRENT_STORE).single();
-      if (data) {
-        if (data.primary_color) {
-          document.documentElement.style.setProperty('--brand-color', data.primary_color);
-        }
-        if (data.logo_url) {
-          document.getElementById('logoContainer').innerHTML = `<img src="${data.logo_url}" class="brand-logo" alt="${data.name}">`;
-        }
-        if (data.promo_text) {
+    // تشغيل تلقائي فور فتح الزبون للصفحة
+    async function initCustomerSession() {
+      // تحميل بيانات المحل
+      const { data: store } = await supabaseClient.from('stores').select('*').eq('slug', CURRENT_STORE).single();
+      if (store) {
+        if (store.primary_color) document.documentElement.style.setProperty('--brand-color', store.primary_color);
+        if (store.logo_url) document.getElementById('logoContainer').innerHTML = `<img src="${store.logo_url}" class="brand-logo" alt="${store.name}">`;
+        if (store.promo_text) {
           document.getElementById('promoBanner').style.display = 'block';
-          document.getElementById('promoTextTag').innerText = data.promo_text;
-          if (data.promo_link) document.getElementById('promoLinkTag').href = data.promo_link;
+          document.getElementById('promoTextTag').innerText = store.promo_text;
+          if (store.promo_link) document.getElementById('promoLinkTag').href = store.promo_link;
         }
-        if (data.google_maps_url) {
-          googleMapsUrl = data.google_maps_url;
-        }
+        if (store.google_maps_url) googleMapsUrl = store.google_maps_url;
       }
 
-      // إذا كان رقم الطلب ممرراً بالرابط مسبقاً (?order=45) نبدأ التتبع تلقائياً
-      if (DYNAMIC_ORDER) {
-        document.getElementById('custOrderNum').value = DYNAMIC_ORDER;
-        startTracking();
+      // تفعيل تشغيل الصوت الصامت مقدماً
+      document.body.addEventListener('click', () => {
+        buzzerAudio.play().then(() => { buzzerAudio.pause(); buzzerAudio.currentTime = 0; }).catch(()=>{});
+      }, { once: true });
+
+      // حساب رقم تسلسلي تلقائي للزبون لهذا اليوم
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const { count } = await supabaseClient
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('store_slug', CURRENT_STORE)
+        .gte('created_at', todayStart.toISOString());
+
+      orderDisplayNum = (count || 0) + 1;
+      document.getElementById('displayOrder').innerText = '#' + orderDisplayNum;
+
+      // تسجيل الطلب فوراً في الكاشير بانتظار ربط الفاتورة
+      const { data: newOrder } = await supabaseClient.from('orders').insert([{
+        order_number: orderDisplayNum.toString(),
+        status: 'preparing',
+        store_slug: CURRENT_STORE
+      }]).select().single();
+
+      if (newOrder) {
+        orderRowId = newOrder.id;
+        listenForOrderUpdates();
       }
     }
 
-    function startTracking() {
-      const val = document.getElementById('custOrderNum').value.trim();
-      if (!val) return;
-      targetOrder = val;
-
-      buzzerAudio.play().then(() => {
-        buzzerAudio.pause();
-        buzzerAudio.currentTime = 0;
-      }).catch(() => {});
-
-      document.getElementById('step-input').style.display = 'none';
-      document.getElementById('step-waiting').style.display = 'block';
-      document.getElementById('displayOrder').innerText = '#' + targetOrder;
-
-      listenForStatus();
-    }
-
-    function listenForStatus() {
-      supabaseClient.channel(`cust-channel-${CURRENT_STORE}-${targetOrder}`)
+    function listenForOrderUpdates() {
+      supabaseClient.channel(`order-live-${orderRowId}`)
         .on('postgres_changes', {
           event: 'UPDATE',
           schema: 'public',
           table: 'orders',
-          filter: `order_number=eq.${targetOrder}`
+          filter: `id=eq.${orderRowId}`
         }, payload => {
-          if (payload.new.store_slug === CURRENT_STORE) {
-            if (payload.new.status === 'ready' && document.getElementById('step-ready').style.display === 'none' && document.getElementById('step-feedback').style.display === 'none' && document.getElementById('step-thanks').style.display === 'none') {
-              triggerNotification();
-            }
+          // إذا الكاشير ربط رقم الفاتورة أو الاسم
+          if (payload.new.rating_comment && payload.new.status === 'preparing') {
+            document.getElementById('displayInvoiceText').innerText = `طلبك: ${payload.new.rating_comment}`;
+          }
 
-            if (payload.new.status === 'completed' && document.getElementById('step-thanks').style.display === 'none') {
-              openRatingScreen();
-            }
+          // الكاشير ضغط جاهز
+          if (payload.new.status === 'ready' && document.getElementById('step-ready').style.display === 'none') {
+            triggerNotification(payload.new.rating_comment || orderDisplayNum);
+          }
+
+          // الكاشير ضغط تم التسليم
+          if (payload.new.status === 'completed' && document.getElementById('step-thanks').style.display === 'none') {
+            openRatingScreen();
           }
         })
         .subscribe();
     }
 
-    function triggerNotification() {
+    function triggerNotification(label) {
       document.getElementById('step-waiting').style.display = 'none';
       document.getElementById('step-ready').style.display = 'block';
-      document.getElementById('readyOrderNum').innerText = '#' + targetOrder;
+      document.getElementById('readyOrderNum').innerText = '#' + label;
       document.body.classList.add('is-ready');
 
-      buzzerAudio.play();
+      buzzerAudio.play().catch(()=>{});
       if ("vibrate" in navigator) navigator.vibrate([600, 300, 600, 300, 600]);
     }
 
@@ -305,10 +284,7 @@
       btn.style.opacity = "0.9";
       btn.disabled = true;
 
-      await supabaseClient.from('orders')
-        .update({ customer_on_way: true })
-        .eq('order_number', targetOrder)
-        .eq('store_slug', CURRENT_STORE);
+      await supabaseClient.from('orders').update({ customer_on_way: true }).eq('id', orderRowId);
     }
 
     function openRatingScreen() {
@@ -334,25 +310,21 @@
 
     async function submitRating() {
       const comment = document.getElementById('feedbackText').value;
-      
       await supabaseClient.from('orders').update({
         rating: selectedRating,
         rating_comment: comment
-      })
-      .eq('order_number', targetOrder)
-      .eq('store_slug', CURRENT_STORE);
+      }).eq('id', orderRowId);
 
       document.getElementById('step-feedback').style.display = 'none';
       document.getElementById('step-thanks').style.display = 'block';
 
-      // معزز تقييمات جوجل مابس: يظهر فقط إذا قيّم 5 نجوم ورابط جوجل موجود
       if (selectedRating === 5 && googleMapsUrl) {
         document.getElementById('googleMapsSection').style.display = 'block';
         document.getElementById('googleMapsBtn').href = googleMapsUrl;
       }
     }
 
-    loadStoreBranding();
+    initCustomerSession();
   </script>
 </body>
 </html>
