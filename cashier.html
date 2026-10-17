@@ -18,32 +18,43 @@
     .metric-value { font-size: 28px; font-weight: 800; color: #38bdf8; }
 
     .grid { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-bottom: 40px; }
-    .card { background: #1e293b; padding: 18px; border-radius: 18px; min-width: 200px; border: 2px solid #334155; text-align: center; transition: all 0.3s; }
+    .card { background: #1e293b; padding: 18px; border-radius: 18px; width: 230px; border: 2px solid #334155; text-align: center; transition: all 0.3s; }
     .card.is-ready { border-color: #16a34a; background: #0f291e; }
     .card.on-way { border-color: #f59e0b; background: #262117; }
     
     .device-title { font-size: 13px; color: #94a3b8; }
-    .order-num { font-size: 32px; font-weight: 800; margin-bottom: 4px; color: #38bdf8; }
+    .order-num { font-size: 30px; font-weight: 800; margin-bottom: 8px; color: #38bdf8; }
     
-    .invoice-input {
-      width: 90%;
-      padding: 6px 10px;
-      font-size: 14px;
+    .field-row { display: flex; gap: 6px; margin-bottom: 8px; }
+    .input-box {
+      flex: 1;
+      padding: 7px 10px;
+      font-size: 13px;
       border-radius: 8px;
       border: 1px solid #475569;
       background: #0f172a;
       color: white;
       text-align: center;
-      margin-bottom: 10px;
       outline: none;
     }
-    .invoice-input:focus { border-color: #38bdf8; }
+    .input-box:focus { border-color: #38bdf8; }
+    .btn-ok {
+      background: #334155;
+      color: #38bdf8;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 0 10px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+    }
+    .btn-ok:hover { background: #475569; color: white; }
 
-    .timer { font-size: 14px; color: #f59e0b; font-weight: 700; margin-bottom: 10px; }
+    .timer { font-size: 14px; color: #f59e0b; font-weight: 700; margin: 10px 0; }
     .timer.stopped { color: #4ade80; }
     .on-way-badge { background: #f59e0b; color: #000; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; margin-bottom: 8px; display: inline-block; }
     
-    .btn-action { width: 100%; padding: 10px; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; margin-top: 5px; }
+    .btn-action { width: 100%; padding: 10px; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; }
     .ready-btn { background: #16a34a; color: white; }
     .done-btn { background: #2563eb; color: white; }
 
@@ -80,10 +91,6 @@
       <div class="metric-title">أجهزة تنتظر التحضير</div>
       <div class="metric-value" id="pendingCount" style="color: #f59e0b;">0</div>
     </div>
-  </div>
-
-  <div style="text-align: center; margin-bottom: 20px; color: #94a3b8; font-size: 14px;">
-    ⚡ الأجهزة تظهر تلقائياً بمجرد مسح الزبون للـ QR. اكتب رقم الفاتورة أو اسم الزبون لتسهيل المناداة.
   </div>
 
   <div class="grid" id="ordersGrid"></div>
@@ -155,17 +162,26 @@
           seconds = Math.max(0, Math.floor((new Date() - new Date(o.created_at)) / 1000));
         }
 
+        // نص رقم الفاتورة أو الأوردر المخزن
+        const invoiceVal = o.rating_comment && o.status === 'preparing' ? o.rating_comment : '';
+        const nameVal = o.customer_name || '';
+
         grid.innerHTML += `
           <div class="card ${isReady ? 'is-ready' : ''} ${onWay ? 'on-way' : ''}">
             <div class="device-title">جهاز الزبون</div>
             <div class="order-num">#${o.order_number}</div>
             
-            <input type="text" 
-                   class="invoice-input" 
-                   placeholder="فاتورة أو اسم الزبون" 
-                   value="${o.rating_comment && o.status === 'preparing' ? o.rating_comment : ''}"
-                   onblur="saveInvoiceNote('${o.id}', this.value)"
-                   ${isReady ? 'disabled' : ''}>
+            <!-- حقل 1: رقم الأوردر / الفاتورة (إجباري) -->
+            <div class="field-row">
+              <input type="text" id="inv-${o.id}" class="input-box" placeholder="رقم الأوردر *" value="${invoiceVal}" ${isReady ? 'disabled' : ''}>
+              <button class="btn-ok" onclick="saveField('${o.id}', 'inv-${o.id}', 'order')">OK</button>
+            </div>
+
+            <!-- حقل 2: اسم الزبون (اختياري) -->
+            <div class="field-row">
+              <input type="text" id="name-${o.id}" class="input-box" placeholder="اسم الزبون (اختياري)" value="${nameVal}" ${isReady ? 'disabled' : ''}>
+              <button class="btn-ok" onclick="saveField('${o.id}', 'name-${o.id}', 'name')">OK</button>
+            </div>
 
             <div class="timer ${isReady ? 'stopped' : ''}" id="timer-${o.id}">
               ${isReady ? 'جاهز في: ' : '⏱️ '} ${formatTime(seconds)}
@@ -181,21 +197,34 @@
       });
     }
 
-    // حفظ رقم الفاتورة وربطه مع جهاز الزبون فوراً
-    async function saveInvoiceNote(id, note) {
-      if (!note) return;
-      await supabaseClient.from('orders').update({ rating_comment: note }).eq('id', id);
+    async function saveField(id, inputId, type) {
+      const val = document.getElementById(inputId).value.trim();
+      if (type === 'order') {
+        if (!val) { alert("رقم الأوردر إجباري!"); return; }
+        await supabaseClient.from('orders').update({ rating_comment: val }).eq('id', id);
+      } else {
+        await supabaseClient.from('orders').update({ customer_name: val }).eq('id', id);
+      }
+      alert("تم الحفظ بنجاح ✔");
     }
 
     async function markReady(id) {
-      const now = new Date();
       const order = activeOrders.find(o => o.id === id);
+      const invoiceVal = document.getElementById(`inv-${id}`).value.trim();
+
+      if (!invoiceVal && !order.rating_comment) {
+        alert("يرجى إدخال رقم الأوردر أو الفاتورة أولاً قبل الضغط على جاهز!");
+        return;
+      }
+
+      const now = new Date();
       const prepSeconds = Math.max(0, Math.round((now - new Date(order.created_at)) / 1000));
 
       await supabaseClient.from('orders').update({
         status: 'ready',
         ready_at: now.toISOString(),
-        service_time_seconds: prepSeconds
+        service_time_seconds: prepSeconds,
+        rating_comment: invoiceVal || order.rating_comment
       }).eq('id', id);
 
       fetchOrders();
