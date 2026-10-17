@@ -74,7 +74,6 @@
       -webkit-text-fill-color: transparent;
       margin: 10px 0;
     }
-
     body.is-ready { background: radial-gradient(circle, #064e3b 0%, #022c22 100%) !important; }
     body.is-ready .order-big-num {
       background: linear-gradient(135deg, #a7f3d0, #34d399);
@@ -82,7 +81,6 @@
       background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-
     .stars { display: flex; justify-content: center; gap: 10px; font-size: 42px; cursor: pointer; margin: 15px 0; }
     .star { color: #475569; transition: 0.2s; }
     .star.active { color: #facc15; }
@@ -119,11 +117,10 @@
   <div class="card">
     <div id="logoContainer"></div>
 
-    <!-- الانتظار -->
+    <!-- 1. شاشة الانتظار -->
     <div id="step-waiting">
       <div class="badge" id="storeBadge">⏳ تم ربط جهازك بالكاشير</div>
       
-      <!-- زر اللمسة الأولية لتأكيد الرنين وتخطي منع المتصفح -->
       <button class="btn btn-sound-activate" id="btnAudioUnlock" onclick="unlockAudioSystem()">
         🔔 اضغط هنا لتأكيد تفعيل الرنين والهزاز
       </button>
@@ -134,7 +131,7 @@
       <p class="sub" id="displayInvoiceText">جاري تسجيل طلبك عند الكاشير...</p>
     </div>
 
-    <!-- الجاهزية والرنين المستمر -->
+    <!-- 2. الجاهزية والرنين -->
     <div id="step-ready" style="display: none;">
       <div class="badge" style="background: rgba(52, 211, 153, 0.2); color: #6ee7b7;">جاهز للاستلام 🎉</div>
       <h2>طلبك اللذيذ صار جاهز! 😋</h2>
@@ -143,7 +140,7 @@
       <button class="btn btn-on-way" id="btnOnWay" onclick="handleCustomerOnWay()">أنا جاي أستلم 🏃‍♂️</button>
     </div>
 
-    <!-- التقييم -->
+    <!-- 3. التقييم -->
     <div id="step-feedback" style="display: none;">
       <div class="badge">صحتين وهنا مقدماً ❤️</div>
       <h2>كيف كانت تجربتك معنا؟ ⭐</h2>
@@ -161,7 +158,7 @@
       <button class="btn btn-primary" onclick="submitRating()">إرسال التقييم ✨</button>
     </div>
 
-    <!-- الشكر وجوجل مابس -->
+    <!-- 4. الشكر وجوجل مابس -->
     <div id="step-thanks" style="display: none;">
       <div style="font-size: 60px; margin-bottom: 10px;">❤️☕</div>
       <h2>شكراً لتقييمك وذوقك!</h2>
@@ -190,7 +187,6 @@
     let orderDisplayNum = null;
     let selectedRating = 5;
 
-    // نظام الصوت المباشر عبر Web Audio API (مستحيل حجبه أو تأخيره)
     let audioCtx = null;
     let buzzerInterval = null;
 
@@ -200,12 +196,10 @@
         audioCtx.resume();
       } catch (e) {}
 
-      // طلب إذن الإشعارات لشاشة القفل
       if ("Notification" in window && Notification.permission !== "granted") {
         Notification.requestPermission();
       }
 
-      // إبقاء الشاشة مستيقظة
       if ('wakeLock' in navigator) {
         navigator.wakeLock.request('screen').catch(()=>{});
       }
@@ -218,21 +212,25 @@
     }
 
     function playBeepTone() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); // تردد نغمة تنبيه واضحة
-      gain.gain.setValueAtTime(1, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.4);
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      } catch (e) {}
     }
 
     function startFullBuzzer() {
       playBeepTone();
+      if (buzzerInterval) clearInterval(buzzerInterval);
       buzzerInterval = setInterval(() => {
         playBeepTone();
       }, 700);
@@ -241,7 +239,6 @@
         navigator.vibrate([500, 250, 500, 250, 500]);
       }
 
-      // إرسال إشعار فوري لشاشة القفل لو خرج من المتصفح
       if ("Notification" in window && Notification.permission === "granted") {
         new Notification("طلبك جاهز للاستلام! 🎉", {
           body: "تفضل باستلام طلبك من الكاونتر الآن.. صحتين وهنا!",
@@ -256,13 +253,47 @@
     }
 
     async function initCustomerSession() {
-      const { data: store } = await supabaseClient.from('stores').select('*').eq('slug', CURRENT_STORE).single();
+      // جلب بيانات المحل
+      const { data: store } = await supabaseClient.from('stores').select('*').eq('slug', CURRENT_STORE).maybeSingle();
       if (store) {
         if (store.primary_color) document.documentElement.style.setProperty('--brand-color', store.primary_color);
         if (store.logo_url) document.getElementById('logoContainer').innerHTML = `<img src="${store.logo_url}" class="brand-logo" alt="${store.name}">`;
         if (store.google_maps_url) googleMapsUrl = store.google_maps_url;
       }
 
+      // فحص الذاكرة المحلية أولاً
+      const savedOrderId = localStorage.getItem(`jahez_order_id_${CURRENT_STORE}`);
+      const savedOrderNum = localStorage.getItem(`jahez_order_num_${CURRENT_STORE}`);
+
+      if (savedOrderId && savedOrderNum) {
+        const { data: existingOrder } = await supabaseClient
+          .from('orders')
+          .select('*')
+          .eq('id', savedOrderId)
+          .maybeSingle();
+
+        if (existingOrder && existingOrder.status !== 'completed') {
+          orderRowId = existingOrder.id;
+          orderDisplayNum = existingOrder.order_number;
+          document.getElementById('displayOrder').innerText = '#' + orderDisplayNum;
+
+          if (existingOrder.rating_comment) {
+            document.getElementById('displayInvoiceText').innerText = `أوردر رقم: ${existingOrder.rating_comment}`;
+          }
+
+          if (existingOrder.status === 'ready') {
+            triggerNotification(existingOrder.rating_comment || orderDisplayNum);
+          }
+
+          listenForOrderUpdates();
+          return;
+        } else {
+          localStorage.removeItem(`jahez_order_id_${CURRENT_STORE}`);
+          localStorage.removeItem(`jahez_order_num_${CURRENT_STORE}`);
+        }
+      }
+
+      // إنشاء طلب جديد فقط إذا لم يكن هناك طلب سابق
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
 
@@ -283,11 +314,15 @@
 
       if (newOrder) {
         orderRowId = newOrder.id;
+        localStorage.setItem(`jahez_order_id_${CURRENT_STORE}`, orderRowId);
+        localStorage.setItem(`jahez_order_num_${CURRENT_STORE}`, orderDisplayNum);
         listenForOrderUpdates();
       }
     }
 
     function listenForOrderUpdates() {
+      if (!orderRowId) return;
+
       supabaseClient.channel(`order-live-${orderRowId}`)
         .on('postgres_changes', {
           event: 'UPDATE',
@@ -355,7 +390,7 @@
         rating_comment: comment
       }).eq('id', orderRowId);
 
-      // مسح الطلب المنتهي من الذاكرة
+      // تنظيف الذاكرة بعد انتهاء التقييم
       localStorage.removeItem(`jahez_order_id_${CURRENT_STORE}`);
       localStorage.removeItem(`jahez_order_num_${CURRENT_STORE}`);
 
@@ -366,98 +401,9 @@
         document.getElementById('googleMapsSection').style.display = 'block';
         document.getElementById('googleMapsBtn').href = googleMapsUrl;
       }
-    } {
-      const comment = document.getElementById('feedbackText').value;
-      await supabaseClient.from('orders').update({
-        rating: selectedRating,
-        rating_comment: comment
-      }).eq('id', orderRowId);
-
-      document.getElementById('step-feedback').style.display = 'none';
-      document.getElementById('step-thanks').style.display = 'block';
-
-      if (selectedRating === 5 && googleMapsUrl) {
-        document.getElementById('googleMapsSection').style.display = 'block';
-        document.getElementById('googleMapsBtn').href = googleMapsUrl;
-      }
     }
 
-async function initCustomerSession() {
-      // 1. تحميل بيانات وهوية المحل
-      const { data: store } = await supabaseClient.from('stores').select('*').eq('slug', CURRENT_STORE).single();
-      if (store) {
-        if (store.primary_color) document.documentElement.style.setProperty('--brand-color', store.primary_color);
-        if (store.logo_url) document.getElementById('logoContainer').innerHTML = `<img src="${store.logo_url}" class="brand-logo" alt="${store.name}">`;
-        if (store.promo_text) {
-          document.getElementById('promoBanner').style.display = 'block';
-          document.getElementById('promoTextTag').innerText = store.promo_text;
-          if (store.promo_link) document.getElementById('promoLinkTag').href = store.promo_link;
-        }
-        if (store.google_maps_url) googleMapsUrl = store.google_maps_url;
-      }
-
-      // 2. فحص إذا كان الزبون مسجل مسبقاً في هذا الهاتف اليوم
-      const savedOrderId = localStorage.getItem(`jahez_order_id_${CURRENT_STORE}`);
-      const savedOrderNum = localStorage.getItem(`jahez_order_num_${CURRENT_STORE}`);
-
-      if (savedOrderId && savedOrderNum) {
-        // التحقق من حالة الطلب المحفوظ في السيرفر
-        const { data: existingOrder } = await supabaseClient
-          .from('orders')
-          .select('*')
-          .eq('id', savedOrderId)
-          .single();
-
-        // إذا كان الطلب موجود وما زال قيد التحضير أو جاهز للاستلام
-        if (existingOrder && existingOrder.status !== 'completed') {
-          orderRowId = existingOrder.id;
-          orderDisplayNum = existingOrder.order_number;
-          document.getElementById('displayOrder').innerText = '#' + orderDisplayNum;
-
-          if (existingOrder.rating_comment) {
-            document.getElementById('displayInvoiceText').innerText = `أوردر رقم: ${existingOrder.rating_comment}`;
-          }
-
-          if (existingOrder.status === 'ready') {
-            triggerNotification(existingOrder.rating_comment || orderDisplayNum);
-          }
-
-          listenForOrderUpdates();
-          return; // إيقاف الدالة هنا لمنع إنشاء طلب مكرر!
-        } else {
-          // إذا كان الطلب القديم مكتمل، نحذفه من الذاكرة لإنشاء طلب جديد
-          localStorage.removeItem(`jahez_order_id_${CURRENT_STORE}`);
-          localStorage.removeItem(`jahez_order_num_${CURRENT_STORE}`);
-        }
-      }
-
-      // 3. إنشاء طلب جديد فقط لأول مرة يدخل فيها الزبون
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-
-      const { count } = await supabaseClient
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('store_slug', CURRENT_STORE)
-        .gte('created_at', todayStart.toISOString());
-
-      orderDisplayNum = (count || 0) + 1;
-      document.getElementById('displayOrder').innerText = '#' + orderDisplayNum;
-
-      const { data: newOrder } = await supabaseClient.from('orders').insert([{
-        order_number: orderDisplayNum.toString(),
-        status: 'preparing',
-        store_slug: CURRENT_STORE
-      }]).select().single();
-
-      if (newOrder) {
-        orderRowId = newOrder.id;
-        // حفظ بيانات الطلب في ذاكرة المتصفح
-        localStorage.setItem(`jahez_order_id_${CURRENT_STORE}`, orderRowId);
-        localStorage.setItem(`jahez_order_num_${CURRENT_STORE}`, orderDisplayNum);
-        
-        listenForOrderUpdates();
-      }
-    }  </script>
+    initCustomerSession();
+  </script>
 </body>
 </html>
