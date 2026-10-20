@@ -18,28 +18,32 @@
 
     #adminContent { display: none; }
     .container { max-width: 1100px; margin: 0 auto; }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
     h1 { font-size: 24px; font-weight: 800; color: #38bdf8; }
     .btn-logout { background: #334155; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
     .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
-    .tab-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .tab-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .tab-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
 
     .card-box { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 25px; margin-bottom: 35px; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
     input, select { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px 14px; border-radius: 12px; font-size: 14px; outline: none; }
     input:focus, select:focus { border-color: #38bdf8; }
     .btn-submit { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; grid-column: 1/-1; }
 
     .list-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 20px; }
-    .item-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 22px; }
+    .item-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 22px; position: relative; }
     .item-title { font-size: 22px; font-weight: 800; color: #f8fafc; }
     .item-sub { color: #94a3b8; font-size: 13px; margin-bottom: 14px; }
     
     .info-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.8; }
     .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
     .badge-chain { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+
+    .qr-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 15px; }
+    .btn-small { background: #334155; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .btn-renew { background: #16a34a; }
   </style>
 </head>
 <body>
@@ -47,11 +51,11 @@
   <div id="loginScreen">
     <div class="login-box">
       <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
-      <h2>لوحة المالك العام</h2>
-      <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">جاهز Super Admin</p>
+      <h2>منطقة الإدارة العليا</h2>
+      <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">Super Admin Portal</p>
       <input type="text" id="usernameInput" placeholder="اسم المستخدم">
       <input type="password" id="passwordInput" placeholder="كلمة المرور">
-      <button onclick="handleLogin()">دخول</button>
+      <button onclick="handleLogin()">تسجيل الدخول</button>
     </div>
   </div>
 
@@ -62,17 +66,269 @@
           <h1>جاهز | الإدارة العليا للمنصة 👑</h1>
           <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">إدارة اشتراكات السلاسل والمحلات الفردية</p>
         </div>
-        <button class="btn-logout" onclick="handleLogout()">خروج 🚪</button>
+        <button class="btn-logout" onclick="handleLogout()">تسجيل خروج 🚪</button>
       </header>
 
-      <!-- التبديل بين إضافة سلسلة أو محل فردي -->
       <div class="tabs">
         <button class="tab-btn active" id="tabChainsBtn" onclick="switchTab('chains')">🏢 إدارة السلاسل (Chains)</button>
         <button class="tab-btn" id="tabStoresBtn" onclick="switchTab('stores')">☕ المحلات الفردية (Stores)</button>
       </div>
 
-      <!-- قسم السلاسل -->
+      <!-- قسم 1: إدارة السلاسل -->
       <div id="sectionChains">
         <div class="card-box">
-          <h3 style="font-size: 18px;">+ إنشاء حساب سلسلة جديد (Multi-Branch Chain)</h3>
-          <p style="color: #94a3b8; font-size: 13px; margin-top: 4
+          <h3 style="font-size: 18px;">+ تسجيل حساب سلسلة جديد (Multi-Branch Chain)</h3>
+          <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">ينشئ حساباً لمدير السلسلة للتحكم بفروعه وإحصائياته المستقلة</p>
+          <div class="form-grid">
+            <input type="text" id="chainName" placeholder="اسم السلسلة (مثلاً: BLK Coffee)">
+            <input type="text" id="chainSlug" placeholder="المعرّف بالإنجليزي (مثلاً: blk)">
+            <input type="text" id="chainUsername" placeholder="اسم المستخدم لمدير السلسلة">
+            <input type="text" id="chainPassword" placeholder="كلمة المرور لمدير السلسلة">
+            <input type="text" id="chainPhone" placeholder="رقم هاتف المسؤول">
+            <select id="chainDuration">
+              <option value="1">شهر واحد (30 يوم)</option>
+              <option value="3">3 شهور</option>
+              <option value="6">6 شهور</option>
+              <option value="12">سنة كاملة (365 يوم)</option>
+            </select>
+            <button class="btn-submit" onclick="addNewChain()">إنشاء حساب السلسلة 🏢</button>
+          </div>
+        </div>
+
+        <div class="list-grid" id="chainsContainer"></div>
+      </div>
+
+      <!-- قسم 2: المحلات الفردية -->
+      <div id="sectionStores" style="display: none;">
+        <div class="card-box">
+          <h3 style="font-size: 18px;">+ تسجيل كافيه فردي (Single Store)</h3>
+          <div class="form-grid">
+            <input type="text" id="storeName" placeholder="اسم المحل">
+            <input type="text" id="storeSlug" placeholder="المعرف بالإنجليزي (مثلاً: astra)">
+            <input type="text" id="storePhone" placeholder="رقم الهاتف">
+            <select id="storeDuration">
+              <option value="1">شهر واحد</option>
+              <option value="3">3 شهور</option>
+              <option value="6">6 شهور</option>
+              <option value="12">سنة كاملة</option>
+            </select>
+            <button class="btn-submit" onclick="addNewSingleStore()">إنشاء المحل الفردي ☕</button>
+          </div>
+        </div>
+
+        <div class="list-grid" id="singleStoresContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const AUTH_USER = "admin";
+    const AUTH_PASS = "jahez2026";
+
+    function checkAuth() {
+      if (sessionStorage.getItem('jahez_super_admin') === 'true') {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminContent').style.display = 'block';
+        loadChains();
+        loadSingleStores();
+      }
+    }
+
+    function handleLogin() {
+      const u = document.getElementById('usernameInput').value.trim();
+      const p = document.getElementById('passwordInput').value.trim();
+      if (u === AUTH_USER && p === AUTH_PASS) {
+        sessionStorage.setItem('jahez_super_admin', 'true');
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminContent').style.display = 'block';
+        loadChains();
+        loadSingleStores();
+      } else {
+        alert("بيانات الدخول غير صحيحة!");
+      }
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('jahez_super_admin');
+      window.location.reload();
+    }
+
+    function switchTab(type) {
+      if (type === 'chains') {
+        document.getElementById('sectionChains').style.display = 'block';
+        document.getElementById('sectionStores').style.display = 'none';
+        document.getElementById('tabChainsBtn').classList.add('active');
+        document.getElementById('tabStoresBtn').classList.remove('active');
+      } else {
+        document.getElementById('sectionChains').style.display = 'none';
+        document.getElementById('sectionStores').style.display = 'block';
+        document.getElementById('tabChainsBtn').classList.remove('active');
+        document.getElementById('tabStoresBtn').classList.add('active');
+      }
+    }
+
+    const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const BASE_URL = window.location.origin + window.location.pathname.replace('admin.html', '');
+
+    // 1. تحميل السلاسل
+    async function loadChains() {
+      const { data, error } = await supabaseClient.from('chains').select('*').order('created_at', { ascending: false });
+      if (error) return;
+      const container = document.getElementById('chainsContainer');
+      container.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="color:#64748b; text-align:center; grid-column:1/-1;">لا توجد سلاسل مسجلة بعد.</p>';
+        return;
+      }
+
+      const today = new Date();
+
+      data.forEach(c => {
+        const chainPortalUrl = `${BASE_URL}chain_dashboard.html`;
+        const endDate = new Date(c.end_date);
+        const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+
+        container.innerHTML += `
+          <div class="item-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="item-title">${c.name}</div>
+              <span class="badge badge-chain">سلسلة فروع</span>
+            </div>
+            <div class="item-sub">@${c.slug} | هاتف: ${c.phone || '--'}</div>
+
+            <div class="info-box">
+              <div>🔑 <b>اسم المستخدم:</b> <code>${c.username}</code></div>
+              <div>🔒 <b>كلمة المرور:</b> <code>${c.password}</code></div>
+              <div>⏳ <b>الانتهاء:</b> ${c.end_date} (${diffDays > 0 ? `باقي ${diffDays} يوم` : 'منتهي'})</div>
+              <div style="margin-top:8px;">🌐 <b>رابط بوابة المدير للسلسلة:</b><br><a href="${chainPortalUrl}" target="_blank" style="color:#38bdf8;">${chainPortalUrl}</a></div>
+            </div>
+
+            <div class="qr-actions">
+              <button class="btn-small btn-renew" onclick="renewChain('${c.id}', '${c.end_date}')">🔄 تجديد شهر</button>
+              <button class="btn-small" style="background:#dc2626;" onclick="deleteChain('${c.id}')">حذف السلسلة</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // إضافة سلسلة جديدة
+    async function addNewChain() {
+      const name = document.getElementById('chainName').value.trim();
+      const slug = document.getElementById('chainSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
+      const username = document.getElementById('chainUsername').value.trim();
+      const password = document.getElementById('chainPassword').value.trim();
+      const phone = document.getElementById('chainPhone').value.trim();
+      const months = parseInt(document.getElementById('chainDuration').value);
+
+      if (!name || !slug || !username || !password) {
+        alert("يرجى تعبئة كافة الحقول المطلوبة للسلسلة!");
+        return;
+      }
+
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + months);
+
+      const { error } = await supabaseClient.from('chains').insert([{
+        name, slug, username, password, phone,
+        plan_duration: months.toString(),
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0]
+      }]);
+
+      if (error) {
+        alert("خطأ: " + error.message);
+        return;
+      }
+
+      document.getElementById('chainName').value = '';
+      document.getElementById('chainSlug').value = '';
+      document.getElementById('chainUsername').value = '';
+      document.getElementById('chainPassword').value = '';
+      document.getElementById('chainPhone').value = '';
+      loadChains();
+    }
+
+    async function renewChain(id, currentEnd) {
+      let base = currentEnd ? new Date(currentEnd) : new Date();
+      if (base < new Date()) base = new Date();
+      base.setMonth(base.getMonth() + 1);
+
+      await supabaseClient.from('chains').update({ end_date: base.toISOString().split('T')[0] }).eq('id', id);
+      loadChains();
+    }
+
+    async function deleteChain(id) {
+      if (!confirm("هل أنت متأكد من حذف هذه السلسلة وجميع فروعها؟")) return;
+      await supabaseClient.from('chains').delete().eq('id', id);
+      loadChains();
+    }
+
+    // 2. تحميل المحلات الفردية
+    async function loadSingleStores() {
+      const { data, error } = await supabaseClient.from('stores').select('*').is('chain_id', null).order('created_at', { ascending: false });
+      if (error) return;
+      const container = document.getElementById('singleStoresContainer');
+      container.innerHTML = '';
+
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="color:#64748b; text-align:center; grid-column:1/-1;">لا توجد محلات فردية مسجلة.</p>';
+        return;
+      }
+
+      data.forEach(s => {
+        const cashierUrl = `${BASE_URL}cashier.html?store=${s.slug}`;
+        const customerUrl = `${BASE_URL}customer.html?store=${s.slug}`;
+        container.innerHTML += `
+          <div class="item-card">
+            <div class="item-title">${s.name}</div>
+            <div class="item-sub">@${s.slug}</div>
+            <div class="info-box">
+              <div>💻 <a href="${cashierUrl}" target="_blank" style="color:#38bdf8;">فتح الكاشير</a></div>
+              <div>📱 <a href="${customerUrl}" target="_blank" style="color:#4ade80;">رابط الزبائن</a></div>
+              <div>⏳ ينتهي: ${s.end_date || '--'}</div>
+            </div>
+            <button class="btn-small" style="background:#dc2626;" onclick="deleteStore('${s.id}')">حذف</button>
+          </div>
+        `;
+      });
+    }
+
+    async function addNewSingleStore() {
+      const name = document.getElementById('storeName').value.trim();
+      const slug = document.getElementById('storeSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
+      const phone = document.getElementById('storePhone').value.trim();
+      const months = parseInt(document.getElementById('storeDuration').value);
+
+      if (!name || !slug) return;
+
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + months);
+
+      await supabaseClient.from('stores').insert([{
+        name, slug, phone,
+        plan_duration: months.toString(),
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0]
+      }]);
+
+      document.getElementById('storeName').value = '';
+      document.getElementById('storeSlug').value = '';
+      loadSingleStores();
+    }
+
+    async function deleteStore(id) {
+      if (!confirm("حذف هذا المحل؟")) return;
+      await supabaseClient.from('stores').delete().eq('id', id);
+      loadSingleStores();
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
