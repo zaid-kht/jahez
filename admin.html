@@ -134,9 +134,10 @@ const AUTH_PASS = "0799";
       }
     }
 
-    function handleLogin() {
+  function handleLogin() {
       const u = document.getElementById('usernameInput').value.trim();
       const p = document.getElementById('passwordInput').value.trim();
+
       if (u === AUTH_USER && p === AUTH_PASS) {
         sessionStorage.setItem('jahez_super_admin', 'true');
         document.getElementById('loginScreen').style.display = 'none';
