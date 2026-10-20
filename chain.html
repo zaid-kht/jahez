@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>جاهز | لوحة إدارة السلسلة المركزية</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; margin: 0; padding: 0; }
+    body { background: #0b1120; color: #f8fafc; padding: 30px 20px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
+    h1 { font-size: 24px; font-weight: 800; color: #38bdf8; }
+    .chain-tag { background: #2563eb; color: white; padding: 4px 14px; border-radius: 8px; font-size: 14px; font-weight: bold; }
+
+    /* الإحصائيات المركزية الشاملة */
+    .metrics-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .metric-card { background: #1e293b; padding: 20px; border-radius: 16px; border: 1px solid #334155; text-align: center; }
+    .metric-title { font-size: 14px; color: #94a3b8; margin-bottom: 8px; }
+    .metric-value { font-size: 30px; font-weight: 800; color: #38bdf8; }
+
+    /* جدول مقارنة الفروع */
+    .branches-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 25px; }
+    .branches-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .branches-title { font-size: 20px; font-weight: 800; color: #f8fafc; }
+
+    table { width: 100%; border-collapse: collapse; text-align: right; }
+    th { padding: 12px 16px; background: #0f172a; color: #94a3b8; font-size: 14px; font-weight: bold; border-bottom: 1px solid #334155; }
+    td { padding: 16px; border-bottom: 1px solid #334155; font-size: 15px; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .btn-action { background: #334155; color: #38bdf8; text-decoration: none; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+    .btn-action:hover { background: #475569; color: white; }
+    .badge-status { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+    .status-good { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>جاهز | الإدارة المركزية للسلسلة ☕🏢</h1>
+        <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">متابعة الأداء اللحظي والمقارنة بين جميع الفروع</p>
+      </div>
+      <div class="chain-tag" id="chainTitle">سلسلة: --</div>
+    </header>
+
+    <!-- مؤشرات الأداء لجميع الفروع مجتمعة اليوم -->
+    <div class="metrics-bar">
+      <div class="metric-card">
+        <div class="metric-title">إجمالي طلبات السلسلة اليوم</div>
+        <div class="metric-value" id="totalOrders">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">متوسط سرعة الخدمة الإجمالي</div>
+        <div class="metric-value" id="overallAvgTime" style="color: #4ade80;">--:--</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">متوسط تقييم السلسلة اليوم</div>
+        <div class="metric-value" id="overallRating" style="color: #facc15;">⭐ -- / 5</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">عدد الفروع النشطة</div>
+        <div class="metric-value" id="activeBranchesCount">0</div>
+      </div>
+    </div>
+
+    <!-- جدول مقارنة أداء الفروع -->
+    <div class="branches-card">
+      <div class="branches-header">
+        <div class="branches-title">مقارنة أداء الفروع اليوم</div>
+        <button onclick="fetchChainData()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-weight:bold;">تحديث فوري 🔄</button>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>اسم الفرع</th>
+              <th>الطلبات المنجزة اليوم</th>
+              <th>طلبات بالانتظار</th>
+              <th>متوسط سرعة التحضير</th>
+              <th>متوسط التقييم</th>
+              <th>العمليات</th>
+            </tr>
+          </thead>
+          <tbody id="branchesTableBody">
+            <tr>
+              <td colspan="6" style="text-align: center; color: #64748b; padding: 30px;">جاري تحميل بيانات الفروع...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const CHAIN_SLUG = urlParams.get('chain') || 'blk';
+    document.getElementById('chainTitle').innerText = `سلسلة: ${CHAIN_SLUG.toUpperCase()}`;
+
+    const BASE_URL = window.location.origin + window.location.pathname.replace('chain.html', '');
+
+    function getTodayStartISO() {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return today.toISOString();
+    }
+
+    function formatTime(totalSeconds) {
+      if (!totalSeconds || isNaN(totalSeconds)) return '--:--';
+      const m = Math.floor(totalSeconds / 60);
+      const s = totalSeconds % 60;
+      return `${m}:${s < 10 ? '0' : ''}${s} دقيقة`;
+    }
+
+    async function fetchChainData() {
+      const todayStart = getTodayStartISO();
+
+      // 1. جلب فروع السلسلة
+      const { data: branches, error: bErr } = await supabaseClient
+        .from('stores')
+        .select('*')
+        .or(`chain_slug.eq.${CHAIN_SLUG},slug.ilike.${CHAIN_SLUG}%`);
+
+      if (bErr || !branches || branches.length === 0) {
+        document.getElementById('branchesTableBody').innerHTML = `
+          <tr><td colspan="6" style="text-align: center; color: #f87171; padding: 30px;">لا توجد فروع مسجلة تابعة لهذا المعرف: ${CHAIN_SLUG}</td></tr>
+        `;
+        return;
+      }
+
+      document.getElementById('activeBranchesCount').innerText = branches.length;
+
+      // 2. جلب جميع طلبات اليوم لجميع الفروع التابعة للسلسلة دفعة واحدة
+      const branchSlugs = branches.map(b => b.slug);
+      const { data: orders } = await supabaseClient
+        .from('orders')
+        .select('id, store_slug, status, service_time_seconds, rating, created_at')
+        .in('store_slug', branchSlugs)
+        .gte('created_at', todayStart);
+
+      const allOrders = orders || [];
+      const completedOrders = allOrders.filter(o => o.status === 'completed');
+      
+      // إجمالي طلبات السلسلة
+      document.getElementById('totalOrders').innerText = completedOrders.length;
+
+      // حساب متوسط سرعة السلسلة بالكامل
+      const validTimes = completedOrders.filter(o => o.service_time_seconds && o.service_time_seconds > 0);
+      if (validTimes.length > 0) {
+        const totalSec = validTimes.reduce((a, b) => a + b.service_time_seconds, 0);
+        document.getElementById('overallAvgTime').innerText = formatTime(Math.round(totalSec / validTimes.length));
+      } else {
+        document.getElementById('overallAvgTime').innerText = '--:--';
+      }
+
+      // حساب متوسط تقييم السلسلة
+      const ratedOrders = allOrders.filter(o => o.rating && o.rating > 0);
+      if (ratedOrders.length > 0) {
+        const avgR = (ratedOrders.reduce((a, b) => a + b.rating, 0) / ratedOrders.length).toFixed(1);
+        document.getElementById('overallRating').innerText = `⭐ ${avgR} / 5`;
+      } else {
+        document.getElementById('overallRating').innerText = '⭐ -- / 5';
+      }
+
+      // بناء صفوف الجدول لكل فرع
+      const tbody = document.getElementById('branchesTableBody');
+      tbody.innerHTML = '';
+
+      branches.forEach(b => {
+        const bOrders = allOrders.filter(o => o.store_slug === b.slug);
+        const bCompleted = bOrders.filter(o => o.status === 'completed');
+        const bPending = bOrders.filter(o => o.status === 'preparing');
+        
+        // متوسط وقت الفرع
+        const bValidTimes = bCompleted.filter(o => o.service_time_seconds && o.service_time_seconds > 0);
+        const bAvgSec = bValidTimes.length > 0 ? Math.round(bValidTimes.reduce((a, c) => a + c.service_time_seconds, 0) / bValidTimes.length) : null;
+
+        // متوسط تقييم الفرع
+        const bRated = bOrders.filter(o => o.rating && o.rating > 0);
+        const bAvgRating = bRated.length > 0 ? (bRated.reduce((a, c) => a + c.rating, 0) / bRated.length).toFixed(1) : '--';
+
+        const cashierLink = `${BASE_URL}cashier.html?store=${b.slug}`;
+
+        tbody.innerHTML += `
+          <tr>
+            <td>
+              <b>${b.name}</b><br>
+              <span style="font-size:12px; color:#94a3b8;">@${b.slug}</span>
+            </td>
+            <td><span class="badge-status status-good">${bCompleted.length} طلب</span></td>
+            <td><span style="color:${bPending.length > 3 ? '#f87171' : '#f59e0b'}; font-weight:bold;">${bPending.length} طلب</span></td>
+            <td><b>${formatTime(bAvgSec)}</b></td>
+            <td><span style="color:#facc15; font-weight:bold;">⭐ ${bAvgRating}</span></td>
+            <td>
+              <a href="${cashierLink}" target="_blank" class="btn-action">فتح كاشير الفرع ↗</a>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    fetchChainData();
+  </script>
+</body>
+</html>
