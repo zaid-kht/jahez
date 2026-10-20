@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>جاهز | لوحة الإدارة العامة</title>
+  <title>جاهز | لوحة الإدارة العامة (Super Admin)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
@@ -22,28 +22,24 @@
     h1 { font-size: 24px; font-weight: 800; color: #38bdf8; }
     .btn-logout { background: #334155; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-    .add-store-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 25px; margin-bottom: 35px; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+    .tab-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    .tab-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
+
+    .card-box { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 25px; margin-bottom: 35px; }
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
     input, select { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px 14px; border-radius: 12px; font-size: 14px; outline: none; }
     input:focus, select:focus { border-color: #38bdf8; }
-    .btn-add { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; grid-column: 1/-1; }
+    .btn-submit { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; grid-column: 1/-1; }
 
-    .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
-    .store-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 22px; }
-    .store-name { font-size: 22px; font-weight: 800; color: #f8fafc; }
-    .store-slug { color: #94a3b8; font-size: 14px; margin-bottom: 14px; direction: ltr; text-align: right; }
+    .list-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 20px; }
+    .item-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 22px; }
+    .item-title { font-size: 22px; font-weight: 800; color: #f8fafc; }
+    .item-sub { color: #94a3b8; font-size: 13px; margin-bottom: 14px; }
     
-    .sub-info-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.7; }
-    .warning-alert { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; border-radius: 10px; padding: 8px 12px; font-weight: bold; margin-bottom: 12px; font-size: 13px; text-align: center; }
-    .expired-alert { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; border-radius: 10px; padding: 8px 12px; font-weight: bold; margin-bottom: 12px; font-size: 13px; text-align: center; }
-
-    .links-box { background: #0f172a; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.8; }
-    .links-box a { color: #38bdf8; text-decoration: none; word-break: break-all; }
-
-    .qr-preview { text-align: center; margin-top: 5px; background: white; padding: 10px; border-radius: 12px; display: inline-block; }
-    .qr-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 15px; }
-    .btn-small { background: #334155; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
-    .btn-renew { background: #16a34a; }
+    .info-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.8; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+    .badge-chain { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
   </style>
 </head>
 <body>
@@ -51,11 +47,11 @@
   <div id="loginScreen">
     <div class="login-box">
       <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
-      <h2>منطقة الإدارة العامة</h2>
-      <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">أدخل بيانات الدخول للمتابعة</p>
+      <h2>لوحة المالك العام</h2>
+      <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">جاهز Super Admin</p>
       <input type="text" id="usernameInput" placeholder="اسم المستخدم">
       <input type="password" id="passwordInput" placeholder="كلمة المرور">
-      <button onclick="handleLogin()">تسجيل الدخول</button>
+      <button onclick="handleLogin()">دخول</button>
     </div>
   </div>
 
@@ -63,224 +59,20 @@
     <div class="container">
       <header>
         <div>
-          <h1>جاهز | إدارة المشتركين والعلامات التجارية 🏢</h1>
-          <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">إعدادات الهوية والتسويق واشتراكات الفروع</p>
+          <h1>جاهز | الإدارة العليا للمنصة 👑</h1>
+          <p style="color: #94a3b8; font-size: 14px; margin-top: 4px;">إدارة اشتراكات السلاسل والمحلات الفردية</p>
         </div>
-        <div style="display: flex; gap: 15px; align-items: center;">
-          <div id="storesCount" style="font-size: 16px; font-weight: bold; color: #38bdf8;">0 محلات</div>
-          <button class="btn-logout" onclick="handleLogout()">تسجيل خروج 🚪</button>
-        </div>
+        <button class="btn-logout" onclick="handleLogout()">خروج 🚪</button>
       </header>
 
-      <div class="add-store-card">
-        <h3 style="font-size: 18px;">+ تسجيل فرع / كافيه جديد بكامل بيانات الهوية والتسويق</h3>
-        <div class="form-grid">
-          <input type="text" id="storeName" placeholder="اسم المحل (مثلاً: أسترا كافيه)">
-          <input type="text" id="storeSlug" placeholder="المعرّف بالإنجليزي (مثلاً: astra)">
-          <input type="text" id="storePhone" placeholder="رقم هاتف المسؤول">
-          <select id="planDuration">
-            <option value="1">شهر واحد (30 يوم)</option>
-            <option value="3">3 شهور (باقة ربع سنوية)</option>
-            <option value="6">6 شهور (باقة نصف سنوية)</option>
-            <option value="12">سنة كاملة (365 يوم)</option>
-          </select>
-          <input type="text" id="logoUrl" placeholder="رابط صورة اللوجو (Logo URL)">
-          <input type="color" id="primaryColor" value="#2563eb" title="اختر اللون المميز للكافيه">
-          <input type="text" id="googleMapsUrl" placeholder="رابط Google Maps لزيادة التقييمات">
-          <input type="text" id="promoText" placeholder="نص العرض الإعلاني وقت الانتظار">
-          <input type="text" id="promoLink" placeholder="رابط العرض (إنستغرام أو منيو أونلاين)">
-          <button class="btn-add" onclick="addNewStore()">إنشاء الحساب وتفعيل الهوية</button>
-        </div>
+      <!-- التبديل بين إضافة سلسلة أو محل فردي -->
+      <div class="tabs">
+        <button class="tab-btn active" id="tabChainsBtn" onclick="switchTab('chains')">🏢 إدارة السلاسل (Chains)</button>
+        <button class="tab-btn" id="tabStoresBtn" onclick="switchTab('stores')">☕ المحلات الفردية (Stores)</button>
       </div>
 
-      <div class="stores-grid" id="storesContainer"></div>
-    </div>
-  </div>
-
-  <script>
-    const AUTH_USER = "admin";
-    const AUTH_PASS = "jahez2026";
-
-    function checkAuth() {
-      if (sessionStorage.getItem('jahez_admin_logged') === 'true') {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminContent').style.display = 'block';
-        loadStores();
-      }
-    }
-
-    function handleLogin() {
-      const u = document.getElementById('usernameInput').value.trim();
-      const p = document.getElementById('passwordInput').value.trim();
-      if (u === AUTH_USER && p === AUTH_PASS) {
-        sessionStorage.setItem('jahez_admin_logged', 'true');
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminContent').style.display = 'block';
-        loadStores();
-      } else {
-        alert("بيانات الدخول غير صحيحة!");
-      }
-    }
-
-    function handleLogout() {
-      sessionStorage.removeItem('jahez_admin_logged');
-      window.location.reload();
-    }
-
-    const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const BASE_URL = window.location.origin + window.location.pathname.replace('admin.html', '');
-
-    async function loadStores() {
-      const { data, error } = await supabaseClient.from('stores').select('*').order('created_at', { ascending: false });
-      if (error) return;
-      renderStores(data || []);
-    }
-
-    function renderStores(stores) {
-      document.getElementById('storesCount').innerText = `${stores.length} مشتركين`;
-      const container = document.getElementById('storesContainer');
-      container.innerHTML = '';
-
-      const today = new Date();
-
-      stores.forEach(s => {
-        const cashierUrl = `${BASE_URL}cashier.html?store=${s.slug}`;
-        const customerUrl = `${BASE_URL}customer.html?store=${s.slug}`;
-        const canvasId = `qr-${s.slug}`;
-
-        const endDate = s.end_date ? new Date(s.end_date) : new Date(today.getTime() + 30*24*60*60*1000);
-        const diffTime = endDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        let alertBadge = '';
-        if (diffDays <= 0) {
-          alertBadge = `<div class="expired-alert">⚠️ انتهى الاشتراك! يلزم التجديد</div>`;
-        } else if (diffDays <= 7) {
-          alertBadge = `<div class="warning-alert">🔔 تنبيه: ينتهي الاشتراك خلال ${diffDays} أيام!</div>`;
-        }
-
-        container.innerHTML += `
-          <div class="store-card">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div class="store-name">${s.name}</div>
-              <span style="font-size:12px; color:${diffDays > 7 ? '#4ade80' : '#f59e0b'}; font-weight:bold;">
-                ${diffDays > 0 ? `باقي ${diffDays} يوم` : 'منتهي'}
-              </span>
-            </div>
-            <div class="store-slug">@${s.slug} | ${s.phone || 'بدون هاتف'}</div>
-
-            ${alertBadge}
-
-            <div class="sub-info-box">
-              <div>🎨 <b>اللون الأساسي:</b> <span style="display:inline-block; width:12px; height:12px; background:${s.primary_color || '#2563eb'}; border-radius:50%;"></span> ${s.primary_color || 'افتراضي'}</div>
-              <div>📍 <b>جوجل مابس:</b> ${s.google_maps_url ? 'مربوط ✔' : 'غير محدد'}</div>
-              <div>📢 <b>العرض الترويجي:</b> ${s.promo_text ? s.promo_text : 'لا يوجد'}</div>
-            </div>
-
-            <div class="links-box">
-              <div>💻 <b>رابط الكاشير:</b><br><a href="${cashierUrl}" target="_blank">${cashierUrl}</a></div>
-              <div style="margin-top:6px;">📱 <b>رابط الزبائن العام:</b><br><a href="${customerUrl}" target="_blank">${customerUrl}</a></div>
-              <div style="margin-top:6px; color:#94a3b8; font-size:11px;">💡 لتوليد QR مع رقم الطلب تلقائياً، اربط الرابط بـ: <code>${customerUrl}&order=15</code></div>
-            </div>
-
-            <div style="text-align: center; margin-top: 10px;">
-              <div class="qr-preview">
-                <canvas id="${canvasId}"></canvas>
-              </div>
-            </div>
-
-            <div class="qr-actions">
-              <button class="btn-small btn-renew" onclick="renewPlan('${s.id}', '${s.end_date}')">🔄 تجديد شهر</button>
-              <button class="btn-small" onclick="downloadQR('${canvasId}', '${s.slug}')">⬇️ تنزيل QR</button>
-              <button class="btn-small" style="background:#dc2626;" onclick="deleteStore('${s.id}')">حذف</button>
-            </div>
-          </div>
-        `;
-
-        setTimeout(() => {
-          QRCode.toCanvas(document.getElementById(canvasId), customerUrl, { width: 130, margin: 1 });
-        }, 50);
-      });
-    }
-
-    async function addNewStore() {
-      const name = document.getElementById('storeName').value.trim();
-      let slug = document.getElementById('storeSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
-      const phone = document.getElementById('storePhone').value.trim();
-      const months = parseInt(document.getElementById('planDuration').value);
-      const logo_url = document.getElementById('logoUrl').value.trim();
-      const primary_color = document.getElementById('primaryColor').value;
-      const google_maps_url = document.getElementById('googleMapsUrl').value.trim();
-      const promo_text = document.getElementById('promoText').value.trim();
-      const promo_link = document.getElementById('promoLink').value.trim();
-
-      if (!name || !slug) {
-        alert("يرجى إدخال اسم المحل والمعرف بالإنجليزي!");
-        return;
-      }
-
-      const startDate = new Date();
-      const endDate = new Date();
-      endDate.setMonth(endDate.getMonth() + months);
-
-      const { error } = await supabaseClient.from('stores').insert([{
-        name,
-        slug,
-        phone,
-        plan_duration: months.toString(),
-        start_date: startDate.toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0],
-        logo_url,
-        primary_color,
-        google_maps_url,
-        promo_text,
-        promo_link,
-        is_active: true
-      }]);
-
-      if (error) {
-        alert("خطأ: " + error.message);
-        return;
-      }
-
-      document.getElementById('storeName').value = '';
-      document.getElementById('storeSlug').value = '';
-      document.getElementById('storePhone').value = '';
-      document.getElementById('logoUrl').value = '';
-      document.getElementById('googleMapsUrl').value = '';
-      document.getElementById('promoText').value = '';
-      document.getElementById('promoLink').value = '';
-      loadStores();
-    }
-
-    async function renewPlan(id, currentEndDateStr) {
-      let baseDate = currentEndDateStr ? new Date(currentEndDateStr) : new Date();
-      const now = new Date();
-      if (baseDate < now) baseDate = now;
-      baseDate.setMonth(baseDate.getMonth() + 1);
-
-      await supabaseClient.from('stores').update({ end_date: baseDate.toISOString().split('T')[0] }).eq('id', id);
-      loadStores();
-    }
-
-    async function deleteStore(id) {
-      if (!confirm("هل أنت متأكد من حذف هذا المحل؟")) return;
-      await supabaseClient.from('stores').delete().eq('id', id);
-      loadStores();
-    }
-
-    function downloadQR(canvasId, slug) {
-      const canvas = document.getElementById(canvasId);
-      const link = document.createElement('a');
-      link.download = `QR-${slug}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-    }
-
-    checkAuth();
-  </script>
-</body>
-</html>
+      <!-- قسم السلاسل -->
+      <div id="sectionChains">
+        <div class="card-box">
+          <h3 style="font-size: 18px;">+ إنشاء حساب سلسلة جديد (Multi-Branch Chain)</h3>
+          <p style="color: #94a3b8; font-size: 13px; margin-top: 4
