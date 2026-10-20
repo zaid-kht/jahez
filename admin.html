@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>جاهز | لوحة الإدارة العامة (Super Admin)</title>
+  <title>جاهز | لوحة الإدارة العليا (Super Admin)</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
@@ -11,44 +11,63 @@
     * { box-sizing: border-box; font-family: 'Tajawal', sans-serif; margin: 0; padding: 0; }
     body { background: #0b1120; color: #f8fafc; padding: 30px 20px; }
     
+    /* شاشة الدخول */
     #loginScreen { min-height: 80vh; display: flex; align-items: center; justify-content: center; }
-    .login-box { background: #1e293b; border: 1px solid #334155; padding: 35px 30px; border-radius: 24px; width: 100%; max-width: 380px; text-align: center; }
-    .login-box input { width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 14px; border-radius: 12px; margin-bottom: 15px; text-align: center; }
-    .login-box button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+    .login-box { background: #1e293b; border: 1px solid #334155; padding: 35px 30px; border-radius: 24px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); }
+    .login-box input { width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 14px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 15px; outline: none; }
+    .login-box input:focus { border-color: #38bdf8; }
+    .login-box button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 16px; }
+    .login-box button:hover { background: #1d4ed8; }
 
+    /* لوحة التحكم الرئيسية */
     #adminContent { display: none; }
     .container { max-width: 1100px; margin: 0 auto; }
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #334155; padding-bottom: 20px; }
     h1 { font-size: 24px; font-weight: 800; color: #38bdf8; }
     .btn-logout { background: #334155; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .btn-logout:hover { background: #475569; }
 
-    .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+    /* أزرار التبويب */
+    .tabs { display: flex; gap: 12px; margin-bottom: 25px; }
     .tab-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 12px 24px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .tab-btn.active { background: #2563eb; color: white; border-color: #2563eb; }
 
+    /* بطاقات الإدخال */
     .card-box { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 25px; margin-bottom: 35px; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
     input, select { background: #0f172a; border: 1px solid #334155; color: white; padding: 12px 14px; border-radius: 12px; font-size: 14px; outline: none; }
     input:focus, select:focus { border-color: #38bdf8; }
-    .btn-submit { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; grid-column: 1/-1; }
+    .btn-submit { background: #2563eb; color: white; border: none; padding: 14px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; grid-column: 1/-1; font-size: 16px; }
+    .btn-submit:hover { background: #1d4ed8; }
 
+    /* شبكة العرض */
     .list-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 20px; }
     .item-card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 22px; position: relative; }
     .item-title { font-size: 22px; font-weight: 800; color: #f8fafc; }
-    .item-sub { color: #94a3b8; font-size: 13px; margin-bottom: 14px; }
+    .item-sub { color: #94a3b8; font-size: 13px; margin-bottom: 14px; direction: ltr; text-align: right; }
     
     .info-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.8; }
     .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
     .badge-chain { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+    .badge-store { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
 
-    .qr-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 15px; }
-    .btn-small { background: #334155; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+    .warning-alert { background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; border-radius: 10px; padding: 8px 12px; font-weight: bold; margin-bottom: 12px; font-size: 13px; text-align: center; }
+    .expired-alert { background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #f87171; border-radius: 10px; padding: 8px 12px; font-weight: bold; margin-bottom: 12px; font-size: 13px; text-align: center; }
+
+    .links-box { background: #0f172a; border-radius: 12px; padding: 12px; margin-bottom: 15px; font-size: 13px; line-height: 1.8; }
+    .links-box a { color: #38bdf8; text-decoration: none; word-break: break-all; }
+
+    .qr-preview { text-align: center; margin-top: 5px; background: white; padding: 10px; border-radius: 12px; display: inline-block; }
+    .actions-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 15px; }
+    .btn-small { background: #334155; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; text-decoration: none; }
+    .btn-small:hover { background: #475569; }
     .btn-renew { background: #16a34a; }
   </style>
 </head>
 <body>
 
-<div id="loginScreen">
+  <!-- شاشة الدخول المقفلة -->
+  <div id="loginScreen">
     <div class="login-box">
       <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
       <h2>منطقة الإدارة العليا</h2>
@@ -59,6 +78,7 @@
     </div>
   </div>
 
+  <!-- محتوى لوحة التحكم -->
   <div id="adminContent">
     <div class="container">
       <header>
@@ -74,45 +94,47 @@
         <button class="tab-btn" id="tabStoresBtn" onclick="switchTab('stores')">☕ المحلات الفردية (Stores)</button>
       </div>
 
-      <!-- قسم 1: إدارة السلاسل -->
+      <!-- 1. قسم السلاسل -->
       <div id="sectionChains">
         <div class="card-box">
-          <h3 style="font-size: 18px;">+ تسجيل حساب سلسلة جديد (Multi-Branch Chain)</h3>
-          <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">ينشئ حساباً لمدير السلسلة للتحكم بفروعه وإحصائياته المستقلة</p>
+          <h3 style="font-size: 18px;">+ إنشاء حساب سلسلة جديد (Multi-Branch Chain)</h3>
+          <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">يحصل مدير السلسلة على بوابة خاصة به لإضافة فروع ومراقبة الأداء المركزي</p>
           <div class="form-grid">
             <input type="text" id="chainName" placeholder="اسم السلسلة (مثلاً: BLK Coffee)">
-            <input type="text" id="chainSlug" placeholder="المعرّف بالإنجليزي (مثلاً: blk)">
-            <input type="text" id="chainUsername" placeholder="اسم المستخدم لمدير السلسلة">
-            <input type="text" id="chainPassword" placeholder="كلمة المرور لمدير السلسلة">
-            <input type="text" id="chainPhone" placeholder="رقم هاتف المسؤول">
-            <select id="chainDuration">
+            <input type="text" id="chainSlug" placeholder="معرّف السلسلة بالإنجليزي (مثلاً: blk)">
+            <input type="text" id="chainUser" placeholder="اسم مستخدم مدير السلسلة">
+            <input type="password" id="chainPass" placeholder="كلمة مرور مدير السلسلة">
+            <input type="text" id="chainPhone" placeholder="رقم هاتف مسؤول السلسلة">
+            <select id="chainPlan">
               <option value="1">شهر واحد (30 يوم)</option>
-              <option value="3">3 شهور</option>
-              <option value="6">6 شهور</option>
+              <option value="3">3 شهور (باقة ربع سنوية)</option>
+              <option value="6">6 شهور (باقة نصف سنوية)</option>
               <option value="12">سنة كاملة (365 يوم)</option>
             </select>
-            <button class="btn-submit" onclick="addNewChain()">إنشاء حساب السلسلة 🏢</button>
+            <button class="btn-submit" onclick="addNewChain()">إنشاء حساب السلسلة وتفعيل الصلاحيات</button>
           </div>
         </div>
 
         <div class="list-grid" id="chainsContainer"></div>
       </div>
 
-      <!-- قسم 2: المحلات الفردية -->
+      <!-- 2. قسم المحلات الفردية -->
       <div id="sectionStores" style="display: none;">
         <div class="card-box">
-          <h3 style="font-size: 18px;">+ تسجيل كافيه فردي (Single Store)</h3>
+          <h3 style="font-size: 18px;">+ تسجيل محل فردي جديد (Single Store)</h3>
+          <p style="color: #94a3b8; font-size: 13px; margin-top: 4px;">كافيه أو مطعم مستقل بفرع واحد فقط</p>
           <div class="form-grid">
-            <input type="text" id="storeName" placeholder="اسم المحل">
-            <input type="text" id="storeSlug" placeholder="المعرف بالإنجليزي (مثلاً: astra)">
-            <input type="text" id="storePhone" placeholder="رقم الهاتف">
-            <select id="storeDuration">
-              <option value="1">شهر واحد</option>
-              <option value="3">3 شهور</option>
-              <option value="6">6 شهور</option>
-              <option value="12">سنة كاملة</option>
+            <input type="text" id="storeName" placeholder="اسم المحل (مثلاً: أسترا كافيه)">
+            <input type="text" id="storeSlug" placeholder="المعرّف بالإنجليزي (مثلاً: astra)">
+            <input type="text" id="storePhone" placeholder="رقم هاتف المسؤول">
+            <select id="storePlan">
+              <option value="1">شهر واحد (30 يوم)</option>
+              <option value="3">3 شهور (باقة ربع سنوية)</option>
+              <option value="6">6 شهور (باقة نصف سنوية)</option>
+              <option value="12">سنة كاملة (365 يوم)</option>
             </select>
-            <button class="btn-submit" onclick="addNewSingleStore()">إنشاء المحل الفردي ☕</button>
+            <input type="color" id="storeColor" value="#2563eb" title="اللون المميز للمحل">
+            <button class="btn-submit" onclick="addNewSingleStore()">إنشاء المحل وتوليد الـ QR</button>
           </div>
         </div>
 
@@ -122,8 +144,15 @@
   </div>
 
   <script>
-   const AUTH_USER = "z";
-const AUTH_PASS = "0799";
+    // بيانات الدخول الخاصة بك
+    const AUTH_USER = "z";
+    const AUTH_PASS = "0799";
+
+    const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const BASE_URL = window.location.origin + window.location.pathname.replace('admin.html', '');
 
     function checkAuth() {
       if (sessionStorage.getItem('jahez_super_admin') === 'true') {
@@ -134,7 +163,7 @@ const AUTH_PASS = "0799";
       }
     }
 
-  function handleLogin() {
+    function handleLogin() {
       const u = document.getElementById('usernameInput').value.trim();
       const p = document.getElementById('passwordInput').value.trim();
 
@@ -154,77 +183,83 @@ const AUTH_PASS = "0799";
       window.location.reload();
     }
 
-    function switchTab(type) {
-      if (type === 'chains') {
-        document.getElementById('sectionChains').style.display = 'block';
-        document.getElementById('sectionStores').style.display = 'none';
+    function switchTab(tab) {
+      if (tab === 'chains') {
         document.getElementById('tabChainsBtn').classList.add('active');
         document.getElementById('tabStoresBtn').classList.remove('active');
+        document.getElementById('sectionChains').style.display = 'block';
+        document.getElementById('sectionStores').style.display = 'none';
       } else {
-        document.getElementById('sectionChains').style.display = 'none';
-        document.getElementById('sectionStores').style.display = 'block';
-        document.getElementById('tabChainsBtn').classList.remove('active');
         document.getElementById('tabStoresBtn').classList.add('active');
+        document.getElementById('tabChainsBtn').classList.remove('active');
+        document.getElementById('sectionStores').style.display = 'block';
+        document.getElementById('sectionChains').style.display = 'none';
       }
     }
 
-    const SUPABASE_URL = 'https://trqgvejqigrnbhotycrx.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_nO1DuwSVvNwEQ_Eza6Nztw_tY3_aqoN';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const BASE_URL = window.location.origin + window.location.pathname.replace('admin.html', '');
-
-    // 1. تحميل السلاسل
+    // --- إدارة السلاسل (Chains) ---
     async function loadChains() {
-      const { data, error } = await supabaseClient.from('chains').select('*').order('created_at', { ascending: false });
-      if (error) return;
+      const { data: chains } = await supabaseClient.from('chains').select('*').order('created_at', { ascending: false });
       const container = document.getElementById('chainsContainer');
       container.innerHTML = '';
 
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p style="color:#64748b; text-align:center; grid-column:1/-1;">لا توجد سلاسل مسجلة بعد.</p>';
+      if (!chains || chains.length === 0) {
+        container.innerHTML = '<p style="color: #64748b; grid-column: 1/-1; text-align: center;">لم تسجل أي سلسلة بعد.</p>';
         return;
       }
 
       const today = new Date();
 
-      data.forEach(c => {
-        const chainPortalUrl = `${BASE_URL}chain_dashboard.html`;
-        const endDate = new Date(c.end_date);
+      for (const c of chains) {
+        // حساب الفروع التابعة للسلسلة
+        const { count } = await supabaseClient.from('stores').select('*', { count: 'exact', head: true }).eq('chain_id', c.id);
+
+        const endDate = c.end_date ? new Date(c.end_date) : new Date(today.getTime() + 30*24*60*60*1000);
         const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+
+        let alertBadge = '';
+        if (diffDays <= 0) alertBadge = `<div class="expired-alert">⚠️ انتهى اشتراك السلسلة!</div>`;
+        else if (diffDays <= 7) alertBadge = `<div class="warning-alert">🔔 باقي ${diffDays} أيام على التجديد!</div>`;
+
+        const chainPortalUrl = `${BASE_URL}chain.html?chain=${c.slug}`;
 
         container.innerHTML += `
           <div class="item-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <div class="item-title">${c.name}</div>
-              <span class="badge badge-chain">سلسلة فروع</span>
+              <span class="badge badge-chain">سلسلة (${count || 0} فروع)</span>
             </div>
-            <div class="item-sub">@${c.slug} | هاتف: ${c.phone || '--'}</div>
+            <div class="item-sub">معرف: @${c.slug} | ${c.phone || 'بدون هاتف'}</div>
+
+            ${alertBadge}
 
             <div class="info-box">
-              <div>🔑 <b>اسم المستخدم:</b> <code>${c.username}</code></div>
-              <div>🔒 <b>كلمة المرور:</b> <code>${c.password}</code></div>
-              <div>⏳ <b>الانتهاء:</b> ${c.end_date} (${diffDays > 0 ? `باقي ${diffDays} يوم` : 'منتهي'})</div>
-              <div style="margin-top:8px;">🌐 <b>رابط بوابة المدير للسلسلة:</b><br><a href="${chainPortalUrl}" target="_blank" style="color:#38bdf8;">${chainPortalUrl}</a></div>
+              <div>👤 <b>اسم مستخدم المدير:</b> <code style="color:#38bdf8;">${c.username}</code></div>
+              <div>🔑 <b>كلمة مرور المدير:</b> <code style="color:#facc15;">${c.password}</code></div>
+              <div>📅 <b>صلاحية الاشتراك:</b> حتى ${c.end_date || 'غير محدد'} (${diffDays > 0 ? diffDays + ' يوم' : 'منتهي'})</div>
             </div>
 
-            <div class="qr-actions">
+            <div class="links-box">
+              <div>🏢 <b>بوابة لوحة السلسلة:</b><br><a href="${chainPortalUrl}" target="_blank">${chainPortalUrl}</a></div>
+            </div>
+
+            <div class="actions-row">
               <button class="btn-small btn-renew" onclick="renewChain('${c.id}', '${c.end_date}')">🔄 تجديد شهر</button>
-              <button class="btn-small" style="background:#dc2626;" onclick="deleteChain('${c.id}')">حذف السلسلة</button>
+              <a href="${chainPortalUrl}" target="_blank" class="btn-small" style="background:#2563eb;">دخول البوابة ↗</a>
+              <button class="btn-small" style="background:#dc2626;" onclick="deleteChain('${c.id}')">حذف</button>
             </div>
           </div>
         `;
-      });
+      }
     }
 
-    // إضافة سلسلة جديدة
     async function addNewChain() {
       const name = document.getElementById('chainName').value.trim();
       const slug = document.getElementById('chainSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
-      const username = document.getElementById('chainUsername').value.trim();
-      const password = document.getElementById('chainPassword').value.trim();
+      const username = document.getElementById('chainUser').value.trim();
+      const password = document.getElementById('chainPass').value.trim();
       const phone = document.getElementById('chainPhone').value.trim();
-      const months = parseInt(document.getElementById('chainDuration').value);
+      const months = parseInt(document.getElementById('chainPlan').value);
 
       if (!name || !slug || !username || !password) {
         alert("يرجى تعبئة كافة الحقول المطلوبة للسلسلة!");
@@ -236,67 +271,108 @@ const AUTH_PASS = "0799";
       endDate.setMonth(endDate.getMonth() + months);
 
       const { error } = await supabaseClient.from('chains').insert([{
-        name, slug, username, password, phone,
+        name,
+        slug,
+        username,
+        password,
+        phone,
         plan_duration: months.toString(),
         start_date: startDate.toISOString().split('T')[0],
         end_date: endDate.toISOString().split('T')[0]
       }]);
 
       if (error) {
-        alert("خطأ: " + error.message);
+        alert("خطأ: المعرف أو اسم المستخدم مستخدم مسبقاً: " + error.message);
         return;
       }
 
       document.getElementById('chainName').value = '';
       document.getElementById('chainSlug').value = '';
-      document.getElementById('chainUsername').value = '';
-      document.getElementById('chainPassword').value = '';
+      document.getElementById('chainUser').value = '';
+      document.getElementById('chainPass').value = '';
       document.getElementById('chainPhone').value = '';
       loadChains();
     }
 
-    async function renewChain(id, currentEnd) {
-      let base = currentEnd ? new Date(currentEnd) : new Date();
-      if (base < new Date()) base = new Date();
-      base.setMonth(base.getMonth() + 1);
+    async function renewChain(id, currentEndDateStr) {
+      let baseDate = currentEndDateStr ? new Date(currentEndDateStr) : new Date();
+      const now = new Date();
+      if (baseDate < now) baseDate = now;
+      baseDate.setMonth(baseDate.getMonth() + 1);
 
-      await supabaseClient.from('chains').update({ end_date: base.toISOString().split('T')[0] }).eq('id', id);
+      await supabaseClient.from('chains').update({ end_date: baseDate.toISOString().split('T')[0] }).eq('id', id);
       loadChains();
     }
 
     async function deleteChain(id) {
-      if (!confirm("هل أنت متأكد من حذف هذه السلسلة وجميع فروعها؟")) return;
+      if (!confirm("هل أنت متأكد من حذف هذه السلسلة؟ سيتم حذف جميع فروعها التابعة تلقائياً!")) return;
       await supabaseClient.from('chains').delete().eq('id', id);
       loadChains();
     }
 
-    // 2. تحميل المحلات الفردية
+    // --- إدارة المحلات الفردية (Stores) ---
     async function loadSingleStores() {
-      const { data, error } = await supabaseClient.from('stores').select('*').is('chain_id', null).order('created_at', { ascending: false });
-      if (error) return;
+      // جلب المحلات التي ليس لها chain_id (محل فردي)
+      const { data: stores } = await supabaseClient.from('stores').select('*').is('chain_id', null).order('created_at', { ascending: false });
       const container = document.getElementById('singleStoresContainer');
       container.innerHTML = '';
 
-      if (!data || data.length === 0) {
-        container.innerHTML = '<p style="color:#64748b; text-align:center; grid-column:1/-1;">لا توجد محلات فردية مسجلة.</p>';
+      if (!stores || stores.length === 0) {
+        container.innerHTML = '<p style="color: #64748b; grid-column: 1/-1; text-align: center;">لا توجد محلات فردية مسجلة.</p>';
         return;
       }
 
-      data.forEach(s => {
+      const today = new Date();
+
+      stores.forEach(s => {
         const cashierUrl = `${BASE_URL}cashier.html?store=${s.slug}`;
         const customerUrl = `${BASE_URL}customer.html?store=${s.slug}`;
+        const canvasId = `qr-single-${s.slug}`;
+
+        const endDate = s.end_date ? new Date(s.end_date) : new Date(today.getTime() + 30*24*60*60*1000);
+        const diffDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+
+        let alertBadge = '';
+        if (diffDays <= 0) alertBadge = `<div class="expired-alert">⚠️ انتهى اشتراك المحل!</div>`;
+        else if (diffDays <= 7) alertBadge = `<div class="warning-alert">🔔 ينتهي الاشتراك خلال ${diffDays} أيام!</div>`;
+
         container.innerHTML += `
           <div class="item-card">
-            <div class="item-title">${s.name}</div>
-            <div class="item-sub">@${s.slug}</div>
-            <div class="info-box">
-              <div>💻 <a href="${cashierUrl}" target="_blank" style="color:#38bdf8;">فتح الكاشير</a></div>
-              <div>📱 <a href="${customerUrl}" target="_blank" style="color:#4ade80;">رابط الزبائن</a></div>
-              <div>⏳ ينتهي: ${s.end_date || '--'}</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="item-title">${s.name}</div>
+              <span class="badge badge-store">محل مستقل</span>
             </div>
-            <button class="btn-small" style="background:#dc2626;" onclick="deleteStore('${s.id}')">حذف</button>
+            <div class="item-sub">@${s.slug} | ${s.phone || 'بدون هاتف'}</div>
+
+            ${alertBadge}
+
+            <div class="info-box">
+              <div>📅 <b>الاشتراك:</b> حتى ${s.end_date || 'غير محدد'} (${diffDays > 0 ? diffDays + ' يوم' : 'منتهي'})</div>
+              <div>🎨 <b>اللون الأساسي:</b> <span style="display:inline-block; width:10px; height:10px; background:${s.primary_color || '#2563eb'}; border-radius:50%;"></span> ${s.primary_color || '#2563eb'}</div>
+            </div>
+
+            <div class="links-box">
+              <div>💻 <b>رابط الكاشير:</b><br><a href="${cashierUrl}" target="_blank">${cashierUrl}</a></div>
+              <div style="margin-top:6px;">📱 <b>رابط الزبائن:</b><br><a href="${customerUrl}" target="_blank">${customerUrl}</a></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 10px;">
+              <div class="qr-preview">
+                <canvas id="${canvasId}"></canvas>
+              </div>
+            </div>
+
+            <div class="actions-row">
+              <button class="btn-small btn-renew" onclick="renewStore('${s.id}', '${s.end_date}')">🔄 تجديد شهر</button>
+              <button class="btn-small" onclick="downloadQR('${canvasId}', '${s.slug}')">⬇️ تنزيل QR</button>
+              <button class="btn-small" style="background:#dc2626;" onclick="deleteStore('${s.id}')">حذف</button>
+            </div>
           </div>
         `;
+
+        setTimeout(() => {
+          QRCode.toCanvas(document.getElementById(canvasId), customerUrl, { width: 120, margin: 1 });
+        }, 50);
       });
     }
 
@@ -304,29 +380,62 @@ const AUTH_PASS = "0799";
       const name = document.getElementById('storeName').value.trim();
       const slug = document.getElementById('storeSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
       const phone = document.getElementById('storePhone').value.trim();
-      const months = parseInt(document.getElementById('storeDuration').value);
+      const months = parseInt(document.getElementById('storePlan').value);
+      const primary_color = document.getElementById('storeColor').value;
 
-      if (!name || !slug) return;
+      if (!name || !slug) {
+        alert("يرجى تعبئة اسم المحل والمعرف!");
+        return;
+      }
 
+      const startDate = new Date();
       const endDate = new Date();
       endDate.setMonth(endDate.getMonth() + months);
 
-      await supabaseClient.from('stores').insert([{
-        name, slug, phone,
+      const { error } = await supabaseClient.from('stores').insert([{
+        name,
+        slug,
+        phone,
         plan_duration: months.toString(),
-        start_date: new Date().toISOString().split('T')[0],
-        end_date: endDate.toISOString().split('T')[0]
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0],
+        primary_color,
+        is_active: true
       }]);
+
+      if (error) {
+        alert("خطأ: " + error.message);
+        return;
+      }
 
       document.getElementById('storeName').value = '';
       document.getElementById('storeSlug').value = '';
+      document.getElementById('storePhone').value = '';
+      loadSingleStores();
+    }
+
+    async function renewStore(id, currentEndDateStr) {
+      let baseDate = currentEndDateStr ? new Date(currentEndDateStr) : new Date();
+      const now = new Date();
+      if (baseDate < now) baseDate = now;
+      baseDate.setMonth(baseDate.getMonth() + 1);
+
+      await supabaseClient.from('stores').update({ end_date: baseDate.toISOString().split('T')[0] }).eq('id', id);
       loadSingleStores();
     }
 
     async function deleteStore(id) {
-      if (!confirm("حذف هذا المحل؟")) return;
+      if (!confirm("هل أنت متأكد من حذف هذا المحل؟")) return;
       await supabaseClient.from('stores').delete().eq('id', id);
       loadSingleStores();
+    }
+
+    function downloadQR(canvasId, slug) {
+      const canvas = document.getElementById(canvasId);
+      const link = document.createElement('a');
+      link.download = `QR-${slug}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
     }
 
     checkAuth();
